@@ -1,56 +1,97 @@
 import type { NextPage } from 'next'
-import {gql, useQuery} from '@apollo/client';
+import {gql, useMutation, useQuery} from '@apollo/client';
+import {Query, Mutation} from 'react-apollo';
 import { useEffect, useState } from 'react';
 
 
-// 発行する GraphQL クエリ
+// リポジトリ取得
 const GET_REPOSITORY = gql`
   query {
     viewer {
-      repositories(
-        last: 3
-        privacy: PUBLIC
-
-      ) {
+      repositories(last: 3,privacy: PUBLIC) {
         nodes {
+          id
           name
           url
           description
+          viewerHasStarred
+          stargazers{
+              totalCount
+            }
         }
       }
     }
   }
 `;
 
+const ADD_STAR_REPOSITORY = gql`
+  mutation($id: ID!) {
+    addStar(input: { starrableId: $id }) {
+      starrable {
+        id
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
+const REMOVE_STAR_REPOSITORY = gql`
+  mutation($id: ID!) {
+    removeStar(input: { starrableId: $id }) {
+      starrable {
+        id
+        viewerHasStarred
+      }
+    }
+  }
+`;
+
 type Repository = {
+  id: string;
   name: string;
   url: string;
   description: string;
+  stargazers: { totalCount: number }
+  viewerHasStarred:boolean
 }
 
 const Home: NextPage = () => {
 
-const { loading, error, data } = useQuery(GET_REPOSITORY);
+  const { loading, error, data } = useQuery(GET_REPOSITORY);
+  const [addStar] = useMutation(ADD_STAR_REPOSITORY);
+  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY);
+
+  // const repositories: Repository[] = data.viewer.repositories?.nodes;
+  const [repositories, setRepositries] = useState<Repository[]>()
+  useEffect(() => {
+    if (!loading && data) {
+      setRepositries(data.viewer.repositories?.nodes)
+    }
+  }, [loading, data])
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {JSON.stringify(error)}</p>;
 
-  console.log({error})
   console.log({ data })
 
 
-  const repositories = data.viewer.repositories?.nodes;
-
-
-  return<div>
-        {repositories.map((repository: Repository) => {
+  return <div>
+    {repositories?.map((repo) => {
           return (
-            <div key={repository.name}>
-              <b>Repository: {repository.name}</b>
-              <p>URL: {repository.url}</p>
-              <p>Description: {repository.description || '-'}</p>
+            <div key={repo.name}>
+              <b>Repository: {repo.name}</b>
+              <p>URL: {repo.url}</p>
+              <p>Description: {repo.description || '-'}</p>
+              <p>Stars: {repo.stargazers.totalCount || '0'}</p>
+               {/* 既にstarしてあるかどうかで出し分け */}
+              {!repo.viewerHasStarred ? (
+                <button onClick={() => {addStar({ variables: { id: repo.id } })}}>star ☆</button>
+              ) : (
+                <button onClick={()=>{removeStar({ variables: { id: repo.id } })}}>unstar ★</button>
+              )}
             </div>)
         })}
+
       </div>
 
 }
