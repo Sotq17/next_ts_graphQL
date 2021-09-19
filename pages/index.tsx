@@ -57,23 +57,30 @@ type Repository = {
 
 const Home: NextPage = () => {
 
-  const { loading, error, data } = useQuery(GET_REPOSITORY);
-  const [addStar] = useMutation(ADD_STAR_REPOSITORY);
-  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY);
-
-  // const repositories: Repository[] = data.viewer.repositories?.nodes;
-  const [repositories, setRepositries] = useState<Repository[]>()
-  useEffect(() => {
-    if (!loading && data) {
-      setRepositries(data.viewer.repositories?.nodes)
+  const { loading, error, data, refetch } = useQuery(GET_REPOSITORY);
+  const [addStar] = useMutation(ADD_STAR_REPOSITORY, {
+  onCompleted() {
+    refetch();
+  },
+});
+  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY, {
+    onCompleted() {
+      refetch();
     }
-  }, [loading, data])
+  })
+
+
+  // const [repositories, setRepositries] = useState<Repository[]>()
+  // useEffect(() => {
+  //   console.log({data})
+  //   if (!loading && data) {
+  //     setRepositries(data.viewer.repositories?.nodes)
+  //   }
+  // }, [loading, data])
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {JSON.stringify(error)}</p>;
-
-  console.log({ data })
-
+  const repositories: Repository[] = data.viewer.repositories?.nodes;
 
   return <div>
     {repositories?.map((repo) => {
