@@ -10,7 +10,11 @@
   },
   "dependencies": {
     "@apollo/client": "^3.4.11",
+    "@babel/core": "^7.15.5",
+    "@emotion/babel-preset-css-prop": "^11.2.0",
+    "@emotion/react": "^11.4.1",
     "apollo-boost": "^0.4.9",
+    "emotion": "^11.0.0",
     "graphql": "^15.5.3",
     "graphql-tag": "^2.12.5",
     "next": "11.1.2",

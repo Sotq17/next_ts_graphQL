@@ -1,5 +1,6 @@
 import type { NextPage } from 'next'
-import {gql, useMutation, useQuery} from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { css } from '@emotion/react'
 import {Query, Mutation} from 'react-apollo';
 import { useEffect, useState } from 'react';
 
@@ -8,7 +9,7 @@ import { useEffect, useState } from 'react';
 const GET_REPOSITORY = gql`
   query {
     viewer {
-      repositories(last: 3,privacy: PUBLIC) {
+      repositories(orderBy: {field: CREATED_AT, direction: DESC},first: 8,privacy: PUBLIC) {
         nodes {
           id
           name
