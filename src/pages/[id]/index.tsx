@@ -1,23 +1,23 @@
 import type { NextPage } from 'next'
 import { gql, useMutation, useQuery } from '@apollo/client'
+import { css } from '@emotion/react'
 import { Query, Mutation } from 'react-apollo'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/dist/client/router'
+import Link from 'next/link'
 
 // リポジトリ取得
 const GET_REPOSITORY = gql`
-  query {
-    viewer {
-      repositories(last: 3, privacy: PUBLIC) {
-        nodes {
-          id
-          name
-          url
-          description
-          viewerHasStarred
-          stargazers {
-            totalCount
-          }
+  query ($id: ID!) {
+    node(id: $id) {
+      ... on Repository {
+        id
+        name
+        url
+        description
+        viewerHasStarred
+        stargazers {
+          totalCount
         }
       }
     }
@@ -58,10 +58,54 @@ type Repository = {
 const Detail: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
+  const { loading, error, data, refetch } = useQuery(GET_REPOSITORY, {
+    variables: { id: id },
+  })
+  const [addStar] = useMutation(ADD_STAR_REPOSITORY, {
+    onCompleted() {
+      refetch()
+    },
+  })
+  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY, {
+    onCompleted() {
+      refetch()
+    },
+  })
 
-  return <p>ID: {id}</p>
+  if (loading) return <p>Loading...</p>
+  if (error) return <p>Error: {JSON.stringify(error)}</p>
+  console.log(data)
+  const repo: Repository = data.node
 
-  return <div></div>
+  return (
+    <div>
+      <Link href={`./`}>一覧</Link>
+      <div key={repo.name}>
+        <b>Repository: {repo.name}</b>
+        <p>URL: {repo.url}</p>
+        <p>Description: {repo.description || '-'}</p>
+        <p>Stars: {repo.stargazers.totalCount || '0'}</p>
+        {/* 既にstarしてあるかどうかで出し分け */}
+        {!repo.viewerHasStarred ? (
+          <button
+            onClick={() => {
+              addStar({ variables: { id: repo.id } })
+            }}
+          >
+            star ☆
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              removeStar({ variables: { id: repo.id } })
+            }}
+          >
+            unstar ★
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default Detail

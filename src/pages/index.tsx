@@ -1,8 +1,6 @@
 import type { NextPage } from 'next'
 import { gql, useMutation, useQuery } from '@apollo/client'
-import { css } from '@emotion/react'
-import { Query, Mutation } from 'react-apollo'
-import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 // リポジトリ取得
 const GET_REPOSITORY = gql`
@@ -111,6 +109,7 @@ const Home: NextPage = () => {
                 unstar ★
               </button>
             )}
+            <Link href={`./${repo.id}`}>詳細</Link>
           </div>
         )
       })}
