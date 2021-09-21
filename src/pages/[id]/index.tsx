@@ -19,6 +19,15 @@ const GET_REPOSITORY = gql`
         stargazers {
           totalCount
         }
+        issues(last: 20) {
+          edges {
+            node {
+              id
+              title
+              url
+            }
+          }
+        }
       }
     }
   }
@@ -46,6 +55,25 @@ const REMOVE_STAR_REPOSITORY = gql`
   }
 `
 
+const CREATE_ISSUE = gql`
+  mutation ($id: ID!, $title: String, $body: String) {
+    createIssue(input: { repositoryId: $id, title: $title, body: $body }) {
+      issue {
+        number
+        body
+      }
+    }
+  }
+`
+
+type Issue = {
+  node: {
+    id: string
+    title: string
+    url: string
+  }
+}
+
 type Repository = {
   id: string
   name: string
@@ -53,6 +81,7 @@ type Repository = {
   description: string
   stargazers: { totalCount: number }
   viewerHasStarred: boolean
+  issues: { edges: Issue[] }
 }
 
 const Detail: NextPage = () => {
@@ -72,10 +101,26 @@ const Detail: NextPage = () => {
     },
   })
 
+  const [createIssue] = useMutation(CREATE_ISSUE, {
+    onCompleted() {
+      refetch()
+    },
+  })
+
+  const [issueTitle, setIssueTitle] = useState('')
+  const [issueContent, setIssueContent] = useState('')
+
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {JSON.stringify(error)}</p>
-  console.log(data)
   const repo: Repository = data.node
+
+  const submitIssue = ({ id, title, body }: any) => {
+    createIssue({
+      variables: { id: id, title: title, body: body },
+    })
+    setIssueTitle('')
+    setIssueContent('')
+  }
 
   return (
     <div>
@@ -83,7 +128,7 @@ const Detail: NextPage = () => {
       <div key={repo.name}>
         <b>Repository: {repo.name}</b>
         <p>URL: {repo.url}</p>
-        <p>Description: {repo.description || '-'}</p>
+        <p>Description: {repo.description || '--'}</p>
         <p>Stars: {repo.stargazers.totalCount || '0'}</p>
         {/* 既にstarしてあるかどうかで出し分け */}
         {!repo.viewerHasStarred ? (
@@ -103,6 +148,38 @@ const Detail: NextPage = () => {
             unstar ★
           </button>
         )}
+
+        {repo.issues.edges?.map((issue, index) => {
+          return (
+            <div key={index}>
+              <p>{issue.node.title}</p>
+              <a href={issue.node.url} target='_blank' rel='noreferrer'>
+                detail (another window)
+              </a>
+            </div>
+          )
+        })}
+        <button
+          onClick={() => {
+            submitIssue({ id: repo.id, title: issueTitle, body: issueContent })
+          }}
+        >
+          new issue
+        </button>
+
+        <input
+          type='text'
+          value={issueTitle}
+          onChange={e => {
+            setIssueTitle(e.target.value)
+          }}
+        />
+        <textarea
+          value={issueContent}
+          onChange={e => {
+            setIssueContent(e.target.value)
+          }}
+        />
       </div>
     </div>
   )
