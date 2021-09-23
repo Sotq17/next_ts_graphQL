@@ -1,61 +1,43 @@
 import type { NextPage } from 'next'
 import { useMutation, useQuery } from '@apollo/client'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import {
   ADD_STAR_REPOSITORY,
   GET_REPOSITORIES,
   REMOVE_STAR_REPOSITORY,
 } from '../graphQL'
 import { Repository } from '../types'
+import { Layout } from '../components/layout/Layout'
+import { css } from '@emotion/react'
+import { RepoItem } from '../components/block/RepoItem'
+
+const FixedSpinner = dynamic(() => import('../components/block/FixedSpinner'), {
+  ssr: false,
+})
 
 const Home: NextPage = () => {
   const { loading, error, data, refetch } = useQuery(GET_REPOSITORIES)
   const repositories: Repository[] = data?.viewer.repositories?.nodes
-  const [addStar] = useMutation(ADD_STAR_REPOSITORY, {
-    onCompleted() {
-      refetch()
-    },
-  })
-  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY, {
-    onCompleted() {
-      refetch()
-    },
-  })
 
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {JSON.stringify(error)}</p>
+  // if (error) return <p>Error: {JSON.stringify(error)}</p>
   return (
-    <div>
-      {repositories?.map(repo => {
-        return (
-          <div key={repo.name}>
-            <b>Repository: {repo.name}</b>
-            <p>URL: {repo.url}</p>
-            <p>Stars: {repo.stargazers.totalCount || '0'}</p>
-            {/* 既にstarしてあるかどうかで出し分け */}
-            {!repo.viewerHasStarred ? (
-              <button
-                onClick={() => {
-                  addStar({ variables: { id: repo.id } })
-                }}
-              >
-                star ☆
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  removeStar({ variables: { id: repo.id } })
-                }}
-              >
-                unstar ★
-              </button>
-            )}
-            <Link href={`./${repo.id}`}>詳細</Link>
-          </div>
-        )
-      })}
-    </div>
+    <Layout>
+      {loading && <FixedSpinner />}
+      {error && <p>Error: {JSON.stringify(error)}</p>}
+      <ul css={repositoryContainer}>
+        {repositories?.map(repo => {
+          return <RepoItem data={repo} refetch={refetch} key={repo.id} />
+        })}
+      </ul>
+    </Layout>
   )
 }
 
 export default Home
+
+const repositoryContainer = css`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-gap: 20px;
+`
