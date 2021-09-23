@@ -1,3 +1,5 @@
+import { ApolloQueryResult, OperationVariables } from '@apollo/client'
+
 export type Issue = {
   node: {
     id: string
@@ -14,3 +16,7 @@ export type Repository = {
   viewerHasStarred: boolean
   issues?: { edges: Issue[] }
 }
+
+export type Refetch = (
+  variables?: Partial<OperationVariables> | undefined
+) => Promise<ApolloQueryResult<any>>
