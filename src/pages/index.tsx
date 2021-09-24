@@ -27,7 +27,16 @@ const Home: NextPage = () => {
       {error && <p>Error: {JSON.stringify(error)}</p>}
       <ul css={repositoryContainer}>
         {repositories?.map(repo => {
-          return <RepoItem data={repo} refetch={refetch} key={repo.id} />
+          return (
+            <li key={repo.id}>
+              <RepoItem
+                data={repo}
+                refetch={refetch}
+                linkText='Detail'
+                linkHref={`./${repo.id}`}
+              />
+            </li>
+          )
         })}
       </ul>
     </Layout>
@@ -39,5 +48,5 @@ export default Home
 const repositoryContainer = css`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  grid-gap: 20px;
+  grid-gap: 40px;
 `

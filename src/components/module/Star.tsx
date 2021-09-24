@@ -53,6 +53,7 @@ const icon = css`
   outline: none;
   padding: 0;
   appearance: none;
+  transition: color 0.2s ease;
   &:before {
     content: '★';
     font-size: 1.6rem;
@@ -60,4 +61,5 @@ const icon = css`
 `
 const isStarred = css`
   color: #ffa500;
+  transition: color 0.1s ease;
 `
