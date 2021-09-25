@@ -4,6 +4,7 @@ export type Issue = {
   node: {
     id: string
     title: string
+    body: string
     url: string
   }
 }

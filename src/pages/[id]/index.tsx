@@ -3,17 +3,17 @@ import { useMutation, useQuery } from '@apollo/client'
 import { css } from '@emotion/react'
 import { useState } from 'react'
 import { useRouter } from 'next/dist/client/router'
-import Link from 'next/link'
-import {
-  ADD_STAR_REPOSITORY,
-  CREATE_ISSUE,
-  GET_REPOSITORY,
-  REMOVE_STAR_REPOSITORY,
-} from '../../graphQL'
+import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
 import { Repository } from '../../types'
 import dynamic from 'next/dynamic'
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
+import { useModal } from '../../components/module/modal/useModal'
+import { FixedModal } from '../../components/module/modal/FixedModal'
+import { Button } from '../../components/atom/Button'
+import { Close } from '../../components/atom/Close'
+import { IssueItem } from '../../components/block/IssueItem'
+import { mediaPc } from '../../style/variables'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -45,12 +45,16 @@ const Detail: NextPage = () => {
     },
   })
 
+  // modal表示用
+  const { isShowing, toggle } = useModal()
+
   const submitIssue = ({ id, title, body }: SubmitProps) => {
     createIssue({
       variables: { id: id, title: title, body: body },
     })
     setIssueTitle('')
     setIssueContent('')
+    toggle()
   }
 
   // if (error) return <p>Error: {JSON.stringify(error)}</p>
@@ -58,6 +62,46 @@ const Detail: NextPage = () => {
   return (
     <Layout>
       {loading && <FixedSpinner />}
+      {isShowing && (
+        <FixedModal>
+          <div css={modalContainer}>
+            <button onClick={toggle} css={closeButton}>
+              <Close />
+            </button>
+
+            <div css={modalFormBox}>
+              <input
+                type='text'
+                value={issueTitle}
+                placeholder='issue title'
+                onChange={e => {
+                  setIssueTitle(e.target.value)
+                }}
+              />
+              <textarea
+                value={issueContent}
+                placeholder='issue body'
+                onChange={e => {
+                  setIssueContent(e.target.value)
+                }}
+              />
+
+              <div css={modalButtonContainer}>
+                <Button
+                  text='Submit'
+                  func={() =>
+                    submitIssue({
+                      id: repo.id,
+                      title: issueTitle,
+                      body: issueContent,
+                    })
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </FixedModal>
+      )}
 
       {repo && (
         <div css={detailContainer}>
@@ -71,41 +115,18 @@ const Detail: NextPage = () => {
           </div>
 
           <div css={issuesContainer}>
-            {repo.issues?.edges?.map((issue, index) => {
-              return (
-                <div key={index}>
-                  <p>{issue.node.title}</p>
-                  <a href={issue.node.url} target='_blank' rel='noreferrer'>
-                    detail (another window)
-                  </a>
-                </div>
-              )
-            })}
-            <button
-              onClick={() => {
-                submitIssue({
-                  id: repo.id,
-                  title: issueTitle,
-                  body: issueContent,
-                })
-              }}
-            >
-              new issue
-            </button>
-
-            <input
-              type='text'
-              value={issueTitle}
-              onChange={e => {
-                setIssueTitle(e.target.value)
-              }}
-            />
-            <textarea
-              value={issueContent}
-              onChange={e => {
-                setIssueContent(e.target.value)
-              }}
-            />
+            <div css={buttonContainer}>
+              <Button text='New Issue' func={toggle} />
+            </div>
+            <ul css={issueList}>
+              {repo.issues?.edges?.map((issue, index) => {
+                return (
+                  <li css={issueItemContainer} key={index}>
+                    <IssueItem node={issue.node} />
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </div>
       )}
@@ -119,8 +140,84 @@ const detailContainer = css`
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
+  max-width: 830px;
 `
 
-const repoItemContainer = css``
+const modalButtonContainer = css`
+  width: 280px;
+  margin: auto;
+`
 
-const issuesContainer = css``
+const buttonContainer = css`
+  width: 200px;
+  margin: 0 auto 30px;
+`
+
+const repoItemContainer = css`
+  height: 100%;
+  max-width: 100%;
+  margin: 0 auto 40px;
+  ${mediaPc} {
+    margin: 0 0 40px;
+  }
+`
+
+const issuesContainer = css`
+  width: 320px;
+  margin: auto;
+  ${mediaPc} {
+    margin: 0;
+  }
+`
+const issueList = css``
+
+const issueItemContainer = css`
+  margin-bottom: 30px;
+  &:last-of-type {
+    margin-bottom: 0px;
+  }
+`
+
+const modalContainer = css`
+  width: 280px;
+  margin: auto;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 20px 20px 40px;
+  ${mediaPc} {
+    width: 500px;
+    padding: 30px 30px 40px;
+  }
+`
+const closeButton = css`
+  border: none;
+  background: #ffffff;
+  cursor: pointer;
+  margin: 0 0 0 auto;
+  display: block;
+`
+// ちょっとサボる
+const modalFormBox = css`
+  margin: 20px 0 10px;
+  display: flex;
+  flex-direction: column;
+  input {
+    height: 40px;
+    background: #f2f5f9;
+    border: 1px solid #c7c7c7;
+    box-sizing: border-box;
+    border-radius: 6px;
+    padding-left: 10px;
+    max-width: 360px;
+    margin-bottom: 20px;
+  }
+  textarea {
+    height: 90px;
+    background: #f2f5f9;
+    border: 1px solid #c7c7c7;
+    box-sizing: border-box;
+    border-radius: 6px;
+    padding-left: 10px;
+    margin-bottom: 50px;
+  }
+`
