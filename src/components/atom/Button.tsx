@@ -35,6 +35,7 @@ const button = css`
   justify-content: center;
   align-items: center;
   border: none;
+  cursor: pointer;
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
