@@ -35,6 +35,7 @@ const Detail: NextPage = () => {
     variables: { id: id },
   })
   const repo: Repository = data?.node
+  console.log(data)
 
   const [issueTitle, setIssueTitle] = useState('')
   const [issueContent, setIssueContent] = useState('')
