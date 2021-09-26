@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing'
+
 import { RepoItem } from '../components/block/RepoItem'
+
 import { GET_REPOSITORY } from '../graphQL'
 
 const repo = {
@@ -42,7 +44,7 @@ describe('RepoItem', () => {
         <RepoItem
           data={repo}
           refetch={() => {
-            console.log('')
+            console.log('refetch')
           }}
           linkText='Home'
           linkHref='/'

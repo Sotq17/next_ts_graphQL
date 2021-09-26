@@ -1,34 +1,58 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+Next_TS_GraphQL
+===============
 
-First, run the development server:
+## 開発環境
 
-```bash
-npm run dev
-# or
-yarn dev
+- node v14.15.0
+- npm v6.14.8
+
+### install
+
+```
+$ npm ci
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### usage
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```
+$ npm run dev
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### test
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```
+$npm run test
+```
 
-## Learn More
+### eslint
 
-To learn more about Next.js, take a look at the following resources:
+#### check
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+$npm run lint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+#### fix
 
-## Deploy on Vercel
+```
+$npm run lint:fix
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## フォルダ構成
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```
+└── src
+    ├── components (pages内で使用するコンポーネント)
+    │   ├── atom (最小単位のコンポーネント)
+    │   ├── block (atomより大きい単位のコンポーネント)
+    │   ├── layout (全体で使用するレイアウトのコンポーネント)
+    │   └── module (特別な機能を持ったコンポーネント)
+    │       └── modal (モーダルのカスタムフック)
+    ├── graphQL (graphQLの定義)
+    ├── pages
+    │   └── [id]
+    ├── style (切り分けたCSS in JS)
+    ├── test (テストファイル置き場)
+    └── types (切り分けた型ファイル)
+```

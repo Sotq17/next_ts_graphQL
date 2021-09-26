@@ -1,8 +1,10 @@
+import React from 'react'
 import { css } from '@emotion/react'
 import Link from 'next/link'
-import React from 'react'
-import { Refetch, Repository } from '../../types'
+
 import { Star } from '../module/Star'
+
+import { Refetch, Repository } from '../../types'
 
 type Props = {
   data: Repository

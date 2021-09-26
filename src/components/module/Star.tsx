@@ -1,7 +1,9 @@
+import React from 'react'
 import { useMutation } from '@apollo/client'
 import { css } from '@emotion/react'
-import React from 'react'
+
 import { ADD_STAR_REPOSITORY, REMOVE_STAR_REPOSITORY } from '../../graphQL'
+
 import { Refetch } from '../../types'
 
 type Props = {

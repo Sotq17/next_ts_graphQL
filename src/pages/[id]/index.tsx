@@ -1,11 +1,14 @@
+import { useState } from 'react'
+import { css } from '@emotion/react'
 import type { NextPage } from 'next'
 import { useMutation, useQuery } from '@apollo/client'
-import { css } from '@emotion/react'
-import { useState } from 'react'
 import { useRouter } from 'next/dist/client/router'
-import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
-import { Repository } from '../../types'
 import dynamic from 'next/dynamic'
+
+import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
+
+import { Repository } from '../../types'
+
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
 import { useModal } from '../../components/module/modal/useModal'
@@ -13,6 +16,7 @@ import { FixedModal } from '../../components/module/modal/FixedModal'
 import { Button } from '../../components/atom/Button'
 import { Close } from '../../components/atom/Close'
 import { IssueItem } from '../../components/block/IssueItem'
+
 import { mediaPc } from '../../style/variables'
 
 const FixedSpinner = dynamic(
@@ -58,7 +62,7 @@ const Detail: NextPage = () => {
     toggle()
   }
 
-  // if (error) return <p>Error: {JSON.stringify(error)}</p>
+  if (error) return <p>Error: {JSON.stringify(error)}</p>
 
   return (
     <Layout>

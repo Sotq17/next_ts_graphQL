@@ -3,7 +3,12 @@
 
 import { useState } from 'react'
 
-export const useModal = () => {
+type Props = {
+  isShowing: boolean
+  toggle: () => void
+}
+
+export const useModal = (): Props => {
   const [isShowing, setIsShowing] = useState(false)
 
   const toggle = () => {

@@ -9,8 +9,7 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-// TODO:
-const MyApp = ({ Component, pageProps }: AppProps) => {
+const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
     <ApolloProvider client={client}>
       <GlobalStyle />

@@ -1,8 +1,8 @@
 // 画面に固定されるSpinner
 // API通信時など、ユーザーの操作を止めたい場合に使用する
 import { css } from '@emotion/react'
-import { Spinner } from '../atom/Spinner'
 import { createPortal } from 'react-dom'
+import { Spinner } from '../atom/Spinner'
 
 const FixedSpinner: React.FC = () => {
   const app = document.getElementById('__next')

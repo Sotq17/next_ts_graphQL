@@ -1,16 +1,14 @@
-import type { NextPage } from 'next'
-import { useMutation, useQuery } from '@apollo/client'
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import {
-  ADD_STAR_REPOSITORY,
-  GET_REPOSITORIES,
-  REMOVE_STAR_REPOSITORY,
-} from '../graphQL'
-import { Repository } from '../types'
-import { Layout } from '../components/layout/Layout'
 import { css } from '@emotion/react'
+import type { NextPage } from 'next'
+import { useQuery } from '@apollo/client'
+import dynamic from 'next/dynamic'
+import { GET_REPOSITORIES } from '../graphQL'
+
+import { Repository } from '../types'
+
+import { Layout } from '../components/layout/Layout'
 import { RepoItem } from '../components/block/RepoItem'
+import { mediaPc } from '../style/variables'
 
 const FixedSpinner = dynamic(() => import('../components/block/FixedSpinner'), {
   ssr: false,
@@ -47,6 +45,9 @@ export default Home
 
 const repositoryContainer = css`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: 40px;
+  ${mediaPc} {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
 `
