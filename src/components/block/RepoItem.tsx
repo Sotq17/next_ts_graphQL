@@ -65,6 +65,8 @@ const itemBody = css`
 const itemBodyText = css`
   margin-bottom: 15px;
   line-height: 1.2;
+  overflow-wrap: break-word;
+  width: 100%;
 `
 
 const itemBodyLink = css`
