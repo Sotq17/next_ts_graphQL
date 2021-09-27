@@ -65,7 +65,7 @@ const itemBody = css`
 const itemBodyText = css`
   margin-bottom: 15px;
   line-height: 1.2;
-  overflow-wrap: break-word;
+  word-break: break-word;
   width: 100%;
 `
 
