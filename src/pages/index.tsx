@@ -18,7 +18,7 @@ const Home: NextPage = () => {
   const { loading, error, data, refetch } = useQuery(GET_REPOSITORIES)
   const repositories: Repository[] = data?.viewer.repositories?.nodes
 
-  // if (error) return <p>Error: {JSON.stringify(error)}</p>
+  if (error) return <p>Error: {JSON.stringify(error)}</p>
   return (
     <Layout>
       {loading && <FixedSpinner />}
