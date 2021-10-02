@@ -82,3 +82,14 @@ export const CREATE_ISSUE = gql`
     }
   }
 `
+
+export const UPDATE_ISSUE = gql`
+  mutation ($id: ID!, $title: String, $body: String) {
+    updateIssue(input: { id: $id, title: $title, body: $body }) {
+      issue {
+        number
+        body
+      }
+    }
+  }
+`

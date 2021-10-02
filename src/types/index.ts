@@ -21,3 +21,9 @@ export type Repository = {
 export type Refetch = (
   variables?: Partial<OperationVariables> | undefined
 ) => Promise<ApolloQueryResult<any>>
+
+export type SubmitProps = {
+  id: string
+  title: string
+  body: string
+}

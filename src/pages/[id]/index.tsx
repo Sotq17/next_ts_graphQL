@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
 
-import { Repository } from '../../types'
+import { Repository, SubmitProps } from '../../types'
 
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
@@ -18,6 +18,8 @@ import { Close } from '../../components/atom/Close'
 import { IssueItem } from '../../components/block/IssueItem'
 
 import { mediaPc } from '../../style/variables'
+import { ModalContent } from '../../components/module/modal/ModalContent'
+import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -26,12 +28,6 @@ const FixedSpinner = dynamic(
   }
 )
 
-type SubmitProps = {
-  id: string
-  title: string
-  body: string
-}
-
 const Detail: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
@@ -39,12 +35,10 @@ const Detail: NextPage = () => {
     variables: { id: id },
   })
   const repo: Repository = data?.node
-  console.log(data)
-
   const [issueTitle, setIssueTitle] = useState('')
   const [issueContent, setIssueContent] = useState('')
 
-  const [createIssue] = useMutation(CREATE_ISSUE, {
+  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE, {
     onCompleted() {
       refetch()
     },
@@ -67,42 +61,22 @@ const Detail: NextPage = () => {
   return (
     <Layout>
       {loading && <FixedSpinner />}
+      {createLoading && <FixedSpinner />}
       {isShowing && (
         <FixedModal>
           <div css={modalContainer}>
             <button onClick={toggle} css={closeButton}>
               <Close />
             </button>
-
             <div css={modalFormBox}>
-              <input
-                type='text'
-                value={issueTitle}
-                placeholder='issue title'
-                onChange={e => {
-                  setIssueTitle(e.target.value)
-                }}
+              <ModalContent
+                id={repo.id}
+                title={issueTitle}
+                content={issueContent}
+                setTitle={setIssueTitle}
+                setContent={setIssueContent}
+                func={submitIssue}
               />
-              <textarea
-                value={issueContent}
-                placeholder='issue body'
-                onChange={e => {
-                  setIssueContent(e.target.value)
-                }}
-              />
-
-              <div css={modalButtonContainer}>
-                <Button
-                  text='Submit'
-                  func={() =>
-                    submitIssue({
-                      id: repo.id,
-                      title: issueTitle,
-                      body: issueContent,
-                    })
-                  }
-                />
-              </div>
             </div>
           </div>
         </FixedModal>
@@ -127,7 +101,7 @@ const Detail: NextPage = () => {
               {repo.issues?.edges?.map((issue, index) => {
                 return (
                   <li css={issueItemContainer} key={index}>
-                    <IssueItem node={issue.node} />
+                    <IssueItem node={issue.node} refetch={refetch} />
                   </li>
                 )
               })}
@@ -146,11 +120,6 @@ const detailContainer = css`
   justify-content: space-between;
   flex-wrap: wrap;
   max-width: 830px;
-`
-
-const modalButtonContainer = css`
-  width: 280px;
-  margin: auto;
 `
 
 const buttonContainer = css`
@@ -180,49 +149,5 @@ const issueItemContainer = css`
   margin-bottom: 30px;
   &:last-of-type {
     margin-bottom: 0px;
-  }
-`
-
-const modalContainer = css`
-  width: 280px;
-  margin: auto;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px 20px 40px;
-  ${mediaPc} {
-    width: 500px;
-    padding: 30px 30px 40px;
-  }
-`
-const closeButton = css`
-  border: none;
-  background: #ffffff;
-  cursor: pointer;
-  margin: 0 0 0 auto;
-  display: block;
-`
-// ちょっとサボる
-const modalFormBox = css`
-  margin: 20px 0 10px;
-  display: flex;
-  flex-direction: column;
-  input {
-    height: 40px;
-    background: #f2f5f9;
-    border: 1px solid #c7c7c7;
-    box-sizing: border-box;
-    border-radius: 6px;
-    padding-left: 10px;
-    max-width: 360px;
-    margin-bottom: 20px;
-  }
-  textarea {
-    height: 90px;
-    background: #f2f5f9;
-    border: 1px solid #c7c7c7;
-    box-sizing: border-box;
-    border-radius: 6px;
-    padding-left: 10px;
-    margin-bottom: 50px;
   }
 `
