@@ -4,6 +4,7 @@ import type { NextPage } from 'next'
 import { ApolloQueryResult, useMutation, useQuery } from '@apollo/client'
 import { useRouter } from 'next/dist/client/router'
 import dynamic from 'next/dynamic'
+import { useInView } from 'react-intersection-observer'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
 
@@ -25,6 +26,7 @@ import { IssueItem } from '../../components/block/IssueItem'
 import { mediaPc } from '../../style/variables'
 import { ModalContent } from '../../components/module/modal/ModalContent'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
+import { SpinnerSmall } from '../../components/atom/Spinner'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -52,6 +54,21 @@ const Detail: NextPage = () => {
       setIssues(data?.node?.issues)
     }
   }, [data])
+
+  // 無限スクロール用
+  const renderFlgRef = useRef(false)
+  const { ref, inView } = useInView({
+    threshold: 0,
+  })
+  useEffect(() => {
+    if (renderFlgRef.current) {
+      if (inView) {
+        getMoreIssue()
+      }
+    } else {
+      renderFlgRef.current = true
+    }
+  }, [inView])
 
   const [issueTitle, setIssueTitle] = useState('')
   const [issueContent, setIssueContent] = useState('')
@@ -90,7 +107,6 @@ const Detail: NextPage = () => {
       edges: issues.edges ? [...issues.edges, ...newData.edges] : newData.edges,
       pageInfo: newData.pageInfo,
     }
-    console.log(newIssues)
 
     setIssues(newIssues)
   }
@@ -154,7 +170,15 @@ const Detail: NextPage = () => {
               })}
             </ul>
             {issues?.pageInfo?.hasNextPage && (
-              <button onClick={getMoreIssue}>more</button>
+              <div>
+                {/* <div ref={ref}>
+                  <h2>{`Header inside viewport ${inView}.`}</h2>
+                </div> */}
+
+                <div css={spinnerWrap} id='fetchMoreButton' ref={ref}>
+                  <SpinnerSmall />
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -200,4 +224,11 @@ const issueItemContainer = css`
   &:last-of-type {
     margin-bottom: 0px;
   }
+`
+
+const spinnerWrap = css`
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-tems: center;
 `

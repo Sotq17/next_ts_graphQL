@@ -27,9 +27,9 @@ const spinner = css`
 `
 
 const spinnerSmall = css`
-  width: 8px;
-  height: 8px;
-  border: 4px solid #dddddd;
+  width: 16px;
+  height: 16px;
+  border: 8px solid #dddddd;
   border-top-color: #aaaaaa;
   border-radius: 50%;
   animation: 1s spin infinite linear;

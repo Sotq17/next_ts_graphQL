@@ -24,23 +24,40 @@ export const modalFormBox = css`
   margin: 20px 0 10px;
   display: flex;
   flex-direction: column;
+`
+
+export const inputWrapper = css`
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
   input {
     height: 40px;
+    width: 100%;
     background: #f2f5f9;
     border: 1px solid #c7c7c7;
     box-sizing: border-box;
     border-radius: 6px;
     padding-left: 10px;
     max-width: 360px;
-    margin-bottom: 20px;
   }
+`
+
+export const inputWrapperSecondary = css`
+  position: relative;
+  width: 100%;
+  margin-bottom: 50px;
   textarea {
     height: 90px;
+    width: 100%;
     background: #f2f5f9;
     border: 1px solid #c7c7c7;
     box-sizing: border-box;
     border-radius: 6px;
     padding-left: 10px;
-    margin-bottom: 50px;
   }
+`
+export const errorText = css`
+  font-size: 12px;
+  margin-top: 5px;
+  color: #ff7676;
 `
