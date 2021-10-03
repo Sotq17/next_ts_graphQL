@@ -25,7 +25,7 @@ export const GET_REPOSITORIES = gql`
 
 // リポジトリ詳細取得
 export const GET_REPOSITORY = gql`
-  query ($id: ID!) {
+  query ($id: ID!, $limit: Int, $cursor: String) {
     node(id: $id) {
       ... on Repository {
         id
@@ -35,7 +35,11 @@ export const GET_REPOSITORY = gql`
         stargazers {
           totalCount
         }
-        issues(last: 20, orderBy: { field: CREATED_AT, direction: DESC }) {
+        issues(
+          first: $limit
+          after: $cursor
+          orderBy: { field: CREATED_AT, direction: DESC }
+        ) {
           edges {
             node {
               id
@@ -43,6 +47,11 @@ export const GET_REPOSITORY = gql`
               body
               url
             }
+          }
+          pageInfo {
+            startCursor
+            hasNextPage
+            endCursor
           }
         }
       }
@@ -76,8 +85,10 @@ export const CREATE_ISSUE = gql`
   mutation ($id: ID!, $title: String, $body: String) {
     createIssue(input: { repositoryId: $id, title: $title, body: $body }) {
       issue {
-        number
+        id
+        title
         body
+        url
       }
     }
   }
@@ -87,8 +98,10 @@ export const UPDATE_ISSUE = gql`
   mutation ($id: ID!, $title: String, $body: String) {
     updateIssue(input: { id: $id, title: $title, body: $body }) {
       issue {
-        number
+        id
+        title
         body
+        url
       }
     }
   }

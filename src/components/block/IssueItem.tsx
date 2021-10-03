@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { css } from '@emotion/react'
-import { Issue, Refetch, SubmitProps } from '../../types'
+import { Issue, Issues, SubmitProps } from '../../types'
 import { useModal } from '../module/modal/useModal'
 import { FixedModal } from '../module/modal/FixedModal'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
@@ -12,26 +12,34 @@ import { UPDATE_ISSUE } from '../../graphQL'
 import FixedSpinner from './FixedSpinner'
 
 export type IssueItem = Issue & {
-  refetch: Refetch
+  issues: Issues
+  setIssues: React.Dispatch<React.SetStateAction<Issues | undefined>>
 }
 
-export const IssueItem: React.FC<IssueItem> = ({ node, refetch }) => {
+export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
   // modal表示用
   const { isShowing, toggle } = useModal()
 
   const [editTitle, setEditTitle] = useState(node.title)
   const [editContent, setEditContent] = useState(node.body)
 
-  const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE, {
-    onCompleted() {
-      refetch()
-    },
-  })
+  const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
 
-  const submitIssue = ({ id, title, body }: SubmitProps) => {
-    updateIssue({
+  const submitIssue = async ({ id, title, body }: SubmitProps) => {
+    const { data } = await updateIssue({
       variables: { id: id, title: title, body: body },
     })
+
+    const updatedIssue = data.updateIssue
+    const newIssues = issues.edges.map(edge => {
+      if (edge.node.id === updatedIssue.issue.id) {
+        return { node: updatedIssue.issue }
+      } else {
+        return edge
+      }
+    })
+
+    setIssues({ edges: newIssues, pageInfo: updatedIssue.pageInfo })
     toggle()
   }
 
@@ -103,6 +111,8 @@ const issueTitleContainer = css`
 const issueTitle = css`
   color: #ffffff;
   font-weight: bold;
+  width: 50%;
+  line-height: 1.2;
 `
 
 const issueBody = css`

@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
-import { useMutation, useQuery } from '@apollo/client'
+import { ApolloQueryResult, useMutation, useQuery } from '@apollo/client'
 import { useRouter } from 'next/dist/client/router'
 import dynamic from 'next/dynamic'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
 
-import { Repository, SubmitProps } from '../../types'
+import {
+  Issues,
+  Repository,
+  RepositoryResponse,
+  SubmitProps,
+} from '../../types'
 
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
@@ -31,29 +36,65 @@ const FixedSpinner = dynamic(
 const Detail: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
-  const { loading, error, data, refetch } = useQuery(GET_REPOSITORY, {
-    variables: { id: id },
-  })
-  const repo: Repository = data?.node
+  const [repo, setRepo] = useState<Repository>()
+  const [issues, setIssues] = useState<Issues>()
+  const limit = 5
+  const { loading, error, data, refetch, fetchMore } = useQuery(
+    GET_REPOSITORY,
+    {
+      variables: { id: id, limit: limit },
+    }
+  )
+
+  const renderFlgRef = useRef(false)
+  useEffect(() => {
+    setRepo(data?.node)
+    if (!renderFlgRef.current) {
+      setIssues(data?.node?.issues)
+      renderFlgRef.current = true
+    }
+  }, [data])
+
   const [issueTitle, setIssueTitle] = useState('')
   const [issueContent, setIssueContent] = useState('')
 
-  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE, {
-    onCompleted() {
-      refetch()
-    },
-  })
+  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE)
 
   // modal表示用
   const { isShowing, toggle } = useModal()
 
-  const submitIssue = ({ id, title, body }: SubmitProps) => {
-    createIssue({
+  const submitIssue = async ({ id, title, body }: SubmitProps) => {
+    const result = await createIssue({
       variables: { id: id, title: title, body: body },
     })
+
+    const newIssues = {
+      edges: issues?.edges
+        ? [{ node: result.data.createIssue.issue }, ...issues?.edges]
+        : [{ node: result.data.createIssue.issue }],
+      pageInfo: issues?.pageInfo,
+    }
+    setIssues(newIssues)
     setIssueTitle('')
     setIssueContent('')
     toggle()
+  }
+
+  const getMoreIssue = async () => {
+    if (!issues) {
+      return
+    }
+    const { data }: ApolloQueryResult<RepositoryResponse> = await fetchMore({
+      variables: { cursor: issues?.pageInfo?.endCursor },
+    })
+    const newData = data.node?.issues
+    const newIssues = {
+      edges: issues.edges ? [...issues.edges, ...newData.edges] : newData.edges,
+      pageInfo: newData.pageInfo,
+    }
+    console.log(newIssues)
+
+    setIssues(newIssues)
   }
 
   if (error) return <p>Error: {JSON.stringify(error)}</p>
@@ -69,14 +110,16 @@ const Detail: NextPage = () => {
               <Close />
             </button>
             <div css={modalFormBox}>
-              <ModalContent
-                id={repo.id}
-                title={issueTitle}
-                content={issueContent}
-                setTitle={setIssueTitle}
-                setContent={setIssueContent}
-                func={submitIssue}
-              />
+              {repo && (
+                <ModalContent
+                  id={repo.id}
+                  title={issueTitle}
+                  content={issueContent}
+                  setTitle={setIssueTitle}
+                  setContent={setIssueContent}
+                  func={submitIssue}
+                />
+              )}
             </div>
           </div>
         </FixedModal>
@@ -85,6 +128,7 @@ const Detail: NextPage = () => {
       {repo && (
         <div css={detailContainer}>
           <div css={repoItemContainer}>
+            {/* TODO:fefetch修正位 */}
             <RepoItem
               data={repo}
               refetch={refetch}
@@ -97,15 +141,23 @@ const Detail: NextPage = () => {
             <div css={buttonContainer}>
               <Button text='New Issue' func={toggle} />
             </div>
+
             <ul css={issueList}>
-              {repo.issues?.edges?.map((issue, index) => {
+              {issues?.edges?.map((issue, index) => {
                 return (
                   <li css={issueItemContainer} key={index}>
-                    <IssueItem node={issue.node} refetch={refetch} />
+                    <IssueItem
+                      node={issue.node}
+                      issues={issues}
+                      setIssues={setIssues}
+                    />
                   </li>
                 )
               })}
             </ul>
+            {issues?.pageInfo?.endCursor && (
+              <button onClick={getMoreIssue}>more</button>
+            )}
           </div>
         </div>
       )}

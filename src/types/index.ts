@@ -1,4 +1,10 @@
-import { ApolloQueryResult, OperationVariables } from '@apollo/client'
+import {
+  ApolloError,
+  ApolloQueryResult,
+  NetworkStatus,
+  OperationVariables,
+} from '@apollo/client'
+import { GraphQLError } from 'graphql'
 
 export type Issue = {
   node: {
@@ -9,18 +15,40 @@ export type Issue = {
   }
 }
 
+export type Issues = {
+  edges: Issue[]
+  pageInfo?: {
+    endCursor: string
+    hasNextPage: boolean
+    startCursor: string
+  }
+}
+
 export type Repository = {
   id: string
   name: string
   url: string
   stargazers: { totalCount: number }
   viewerHasStarred: boolean
-  issues?: { edges: Issue[] }
+  issues: Issues
+}
+
+export type RepositoryResponse = {
+  node: Repository
 }
 
 export type Refetch = (
   variables?: Partial<OperationVariables> | undefined
-) => Promise<ApolloQueryResult<any>>
+) => Promise<ApolloQueryResult<T>>
+
+type T = {
+  data: T
+  errors?: readonly GraphQLError[] | undefined
+  error?: ApolloError | undefined
+  loading: boolean
+  networkStatus: NetworkStatus
+  partial?: boolean | undefined
+}
 
 export type SubmitProps = {
   id: string
