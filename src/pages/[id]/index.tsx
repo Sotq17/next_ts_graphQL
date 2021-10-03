@@ -46,12 +46,10 @@ const Detail: NextPage = () => {
     }
   )
 
-  const renderFlgRef = useRef(false)
   useEffect(() => {
     setRepo(data?.node)
-    if (!renderFlgRef.current) {
+    if (!data?.node?.issues.length) {
       setIssues(data?.node?.issues)
-      renderFlgRef.current = true
     }
   }, [data])
 
@@ -155,7 +153,7 @@ const Detail: NextPage = () => {
                 )
               })}
             </ul>
-            {issues?.pageInfo?.endCursor && (
+            {issues?.pageInfo?.hasNextPage && (
               <button onClick={getMoreIssue}>more</button>
             )}
           </div>
