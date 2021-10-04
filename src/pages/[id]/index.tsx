@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic'
 import { useInView } from 'react-intersection-observer'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
-
 import {
   Issues,
   Repository,
@@ -22,11 +21,11 @@ import { FixedModal } from '../../components/module/modal/FixedModal'
 import { Button } from '../../components/atom/Button'
 import { Close } from '../../components/atom/Close'
 import { IssueItem } from '../../components/block/IssueItem'
+import { ModalContent } from '../../components/module/modal/ModalContent'
+import { SpinnerSmall } from '../../components/atom/Spinner'
 
 import { mediaPc } from '../../style/variables'
-import { ModalContent } from '../../components/module/modal/ModalContent'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
-import { SpinnerSmall } from '../../components/atom/Spinner'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -38,19 +37,22 @@ const FixedSpinner = dynamic(
 const Detail: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
+  // リポジトリ全体のState
   const [repo, setRepo] = useState<Repository>()
+  // issue配列のState
   const [issues, setIssues] = useState<Issues>()
   const limit = 5
   const { loading, error, data, refetch, fetchMore } = useQuery(
     GET_REPOSITORY,
     {
       variables: { id: id, limit: limit },
+      fetchPolicy: 'no-cache',
     }
   )
-
+  // data更新時の反映 (ex.star,unstar)
   useEffect(() => {
     setRepo(data?.node)
-    if (!data?.node?.issues.length) {
+    if (!issues?.edges.length) {
       setIssues(data?.node?.issues)
     }
   }, [data])
@@ -60,41 +62,7 @@ const Detail: NextPage = () => {
   const { ref, inView } = useInView({
     threshold: 0,
   })
-  useEffect(() => {
-    if (renderFlgRef.current) {
-      if (inView) {
-        getMoreIssue()
-      }
-    } else {
-      renderFlgRef.current = true
-    }
-  }, [inView])
-
-  const [issueTitle, setIssueTitle] = useState('')
-  const [issueContent, setIssueContent] = useState('')
-
-  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE)
-
-  // modal表示用
-  const { isShowing, toggle } = useModal()
-
-  const submitIssue = async ({ id, title, body }: SubmitProps) => {
-    const result = await createIssue({
-      variables: { id: id, title: title, body: body },
-    })
-
-    const newIssues = {
-      edges: issues?.edges
-        ? [{ node: result.data.createIssue.issue }, ...issues?.edges]
-        : [{ node: result.data.createIssue.issue }],
-      pageInfo: issues?.pageInfo,
-    }
-    setIssues(newIssues)
-    setIssueTitle('')
-    setIssueContent('')
-    toggle()
-  }
-
+  // 追加issue表示
   const getMoreIssue = async () => {
     if (!issues) {
       return
@@ -107,8 +75,40 @@ const Detail: NextPage = () => {
       edges: issues.edges ? [...issues.edges, ...newData.edges] : newData.edges,
       pageInfo: newData.pageInfo,
     }
-
     setIssues(newIssues)
+  }
+  // issue追加発火
+  useEffect(() => {
+    if (renderFlgRef.current) {
+      if (inView) {
+        getMoreIssue()
+      }
+    } else {
+      renderFlgRef.current = true
+    }
+  }, [inView])
+
+  // 新規issue作成用
+  const [issueTitle, setIssueTitle] = useState('')
+  const [issueContent, setIssueContent] = useState('')
+  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE)
+
+  // modal表示/非表示用
+  const { isShowing, toggle } = useModal()
+  const submitIssue = async ({ id, title, body }: SubmitProps) => {
+    const result = await createIssue({
+      variables: { id: id, title: title, body: body },
+    })
+    const newIssues = {
+      edges: issues?.edges
+        ? [{ node: result.data.createIssue.issue }, ...issues?.edges]
+        : [{ node: result.data.createIssue.issue }],
+      pageInfo: issues?.pageInfo,
+    }
+    setIssues(newIssues)
+    setIssueTitle('')
+    setIssueContent('')
+    toggle()
   }
 
   if (error) return <p>Error: {JSON.stringify(error)}</p>
@@ -142,7 +142,6 @@ const Detail: NextPage = () => {
       {repo && (
         <div css={detailContainer}>
           <div css={repoItemContainer}>
-            {/* TODO:fefetch修正位 */}
             <RepoItem
               data={repo}
               refetch={refetch}
@@ -170,14 +169,8 @@ const Detail: NextPage = () => {
               })}
             </ul>
             {issues?.pageInfo?.hasNextPage && (
-              <div>
-                {/* <div ref={ref}>
-                  <h2>{`Header inside viewport ${inView}.`}</h2>
-                </div> */}
-
-                <div css={spinnerWrap} id='fetchMoreButton' ref={ref}>
-                  <SpinnerSmall />
-                </div>
+              <div css={spinnerWrap} id='fetchMoreButton' ref={ref}>
+                <SpinnerSmall />
               </div>
             )}
           </div>

@@ -1,15 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { css } from '@emotion/react'
-import { Issue, Issues, SubmitProps } from '../../types'
-import { useModal } from '../module/modal/useModal'
-import { FixedModal } from '../module/modal/FixedModal'
-import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
-import { Close } from '../atom/Close'
-import { ModalContent } from '../module/modal/ModalContent'
-import { ButtonSmall } from '../atom/ButtonSmall'
 import { useMutation } from '@apollo/client'
 import { UPDATE_ISSUE } from '../../graphQL'
+
+import { Issue, Issues, SubmitProps } from '../../types'
+
+import { ButtonSmall } from '../atom/ButtonSmall'
 import FixedSpinner from './FixedSpinner'
+import { useModal } from '../module/modal/useModal'
+import { FixedModal } from '../module/modal/FixedModal'
+import { ModalContent } from '../module/modal/ModalContent'
+import { Close } from '../atom/Close'
+
+import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
 
 export type IssueItem = Issue & {
   issues: Issues
@@ -17,19 +20,29 @@ export type IssueItem = Issue & {
 }
 
 export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
-  // modal表示用
+  // modal表示/非表示用
   const { isShowing, toggle } = useModal()
 
+  // modalの表示内容
   const [editTitle, setEditTitle] = useState(node.title)
   const [editContent, setEditContent] = useState(node.body)
+  const renderFlgRef = useRef(false)
+  useEffect(() => {
+    if (renderFlgRef.current) {
+      setEditTitle(node.title)
+      setEditContent(node.body)
+    } else {
+      renderFlgRef.current = true
+    }
+  }, [node])
 
   const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
 
+  // 更新されたissueをissues配列に反映
   const submitIssue = async ({ id, title, body }: SubmitProps) => {
     const { data } = await updateIssue({
       variables: { id: id, title: title, body: body },
     })
-
     const updatedIssue = data.updateIssue
     const newIssues = issues.edges.map(edge => {
       if (edge.node.id === updatedIssue.issue.id) {
@@ -38,8 +51,7 @@ export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
         return edge
       }
     })
-
-    setIssues({ edges: newIssues, pageInfo: updatedIssue.pageInfo })
+    setIssues({ edges: newIssues, pageInfo: issues.pageInfo })
     toggle()
   }
 
