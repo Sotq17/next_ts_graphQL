@@ -1,18 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
-import { ApolloQueryResult, useMutation, useQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import { useRouter } from 'next/dist/client/router'
 import dynamic from 'next/dynamic'
-import { useInView } from 'react-intersection-observer'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
-import {
-  Issues,
-  Repository,
-  RepositoryResponse,
-  SubmitProps,
-} from '../../types'
+import { Issues, Repository, SubmitProps } from '../../types'
 
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
@@ -22,10 +16,10 @@ import { Button } from '../../components/atom/Button'
 import { Close } from '../../components/atom/Close'
 import { IssueItem } from '../../components/block/IssueItem'
 import { ModalContent } from '../../components/module/modal/ModalContent'
-import { SpinnerSmall } from '../../components/atom/Spinner'
 
 import { mediaPc } from '../../style/variables'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
+import { FetchMoreSpinner } from '../../components/module/fetchMoreSpinner'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -56,37 +50,6 @@ const Detail: NextPage = () => {
       setIssues(data?.node?.issues)
     }
   }, [data])
-
-  // 無限スクロール用
-  const renderFlgRef = useRef(false)
-  const { ref, inView } = useInView({
-    threshold: 0,
-  })
-  // 追加issue表示
-  const getMoreIssue = async () => {
-    if (!issues) {
-      return
-    }
-    const { data }: ApolloQueryResult<RepositoryResponse> = await fetchMore({
-      variables: { cursor: issues?.pageInfo?.endCursor },
-    })
-    const newData = data.node?.issues
-    const newIssues = {
-      edges: issues.edges ? [...issues.edges, ...newData.edges] : newData.edges,
-      pageInfo: newData.pageInfo,
-    }
-    setIssues(newIssues)
-  }
-  // issue追加発火
-  useEffect(() => {
-    if (renderFlgRef.current) {
-      if (inView) {
-        getMoreIssue()
-      }
-    } else {
-      renderFlgRef.current = true
-    }
-  }, [inView])
 
   // 新規issue作成用
   const [issueTitle, setIssueTitle] = useState('')
@@ -155,7 +118,7 @@ const Detail: NextPage = () => {
               <Button text='New Issue' func={toggle} />
             </div>
 
-            <ul css={issueList}>
+            <ul>
               {issues?.edges?.map((issue, index) => {
                 return (
                   <li css={issueItemContainer} key={index}>
@@ -169,9 +132,11 @@ const Detail: NextPage = () => {
               })}
             </ul>
             {issues?.pageInfo?.hasNextPage && (
-              <div css={spinnerWrap} id='fetchMoreButton' ref={ref}>
-                <SpinnerSmall />
-              </div>
+              <FetchMoreSpinner
+                issues={issues}
+                setIssues={setIssues}
+                fetchMore={fetchMore}
+              />
             )}
           </div>
         </div>
@@ -210,18 +175,10 @@ const issuesContainer = css`
     margin: 0;
   }
 `
-const issueList = css``
 
 const issueItemContainer = css`
   margin-bottom: 30px;
   &:last-of-type {
     margin-bottom: 0px;
   }
-`
-
-const spinnerWrap = css`
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-  align-tems: center;
 `
