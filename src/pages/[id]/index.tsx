@@ -19,7 +19,7 @@ import { ModalContent } from '../../components/module/modal/ModalContent'
 
 import { mediaPc } from '../../style/variables'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
-import { FetchMoreSpinner } from '../FetchMoreSpinner../components/module/FetchMoreSpinner'
+import { FetchMoreSpinner } from '../../components/module/FetchMoreSpinner'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
