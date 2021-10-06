@@ -20,6 +20,8 @@ import { ModalContent } from '../../components/module/modal/ModalContent'
 import { mediaPc } from '../../style/variables'
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
 import { FetchMoreSpinner } from '../../components/module/FetchMoreSpinner'
+import { RepositoryState } from '..'
+import { useRecoilValue, useSetRecoilState } from 'recoil'
 
 const FixedSpinner = dynamic(
   () => import('../../components/block/FixedSpinner'),
@@ -31,6 +33,12 @@ const FixedSpinner = dynamic(
 const Detail: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
+  const repositories: Repository[] = useRecoilValue(RepositoryState)
+  const repository = repositories.find((repo: Repository) => repo.name === id)
+  console.log(repository)
+
+  console.log(repositories)
+  console.log(id)
   // リポジトリ全体のState
   const [repo, setRepo] = useState<Repository>()
   // issue配列のState
@@ -39,7 +47,7 @@ const Detail: NextPage = () => {
   const { loading, error, data, refetch, fetchMore } = useQuery(
     GET_REPOSITORY,
     {
-      variables: { id: id, limit: limit },
+      variables: { id: repository?.id, limit: limit },
       fetchPolicy: 'no-cache',
     }
   )

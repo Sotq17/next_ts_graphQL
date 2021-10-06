@@ -1,5 +1,6 @@
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
 import { relayStylePagination } from '@apollo/client/utilities'
+import { RecoilRoot } from 'recoil'
 import type { AppProps } from 'next/app'
 import GlobalStyle from '../style/GlobalStyle'
 
@@ -21,10 +22,12 @@ const client = new ApolloClient({
 
 const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
-    <ApolloProvider client={client}>
-      <GlobalStyle />
-      <Component {...pageProps} />
-    </ApolloProvider>
+    <RecoilRoot>
+      <ApolloProvider client={client}>
+        <GlobalStyle />
+        <Component {...pageProps} />
+      </ApolloProvider>
+    </RecoilRoot>
   )
 }
 export default MyApp
