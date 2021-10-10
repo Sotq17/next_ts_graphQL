@@ -1,48 +1,42 @@
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
-import { useQuery } from '@apollo/client'
 import dynamic from 'next/dynamic'
-import { GET_REPOSITORIES } from '../graphQL'
 
 import { Repository } from '../types'
 
 import { Layout } from '../components/layout/Layout'
 import { RepoItem } from '../components/block/RepoItem'
 import { mediaPc } from '../style/variables'
-import { atom, useRecoilState } from 'recoil'
+import { useDispatch, useSelector } from 'react-redux'
 import { useEffect } from 'react'
+import {
+  fetchReposirories,
+  selectRepositories,
+  selectRepositoriesLoading,
+} from '../store/slices/repositorySlice'
 
 const FixedSpinner = dynamic(() => import('../components/block/FixedSpinner'), {
   ssr: false,
 })
 
-const initialRepository: Repository[] = []
-
-export const RepositoryState = atom({
-  key: 'repository',
-  default: initialRepository,
-})
-
 const Home: NextPage = () => {
-  const { loading, error, data, refetch } = useQuery(GET_REPOSITORIES)
-  const [repositories, setRepositories] = useRecoilState(RepositoryState)
-  useEffect(() => {
-    setRepositories(data?.viewer.repositories?.nodes)
-  }, [data])
+  const repositories: Repository[] = useSelector(selectRepositories.selectAll)
+  const loading = useSelector(selectRepositoriesLoading)
 
-  if (error) return <p>Error: {JSON.stringify(error)}</p>
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(fetchReposirories())
+  }, [])
 
   return (
     <Layout>
       {loading && <FixedSpinner />}
-      {error && <p>Error: {JSON.stringify(error)}</p>}
       <ul css={repositoryContainer}>
         {repositories?.map(repo => {
           return (
             <li key={repo.id}>
               <RepoItem
                 data={repo}
-                refetch={refetch}
                 linkText='Detail'
                 linkHref={`./${repo.name}`}
               />

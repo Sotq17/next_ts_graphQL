@@ -33,6 +33,15 @@ export type Repository = {
   issues: Issues
 }
 
+export type RepositoryState = {
+  id: string
+  name: string
+  url: string
+  stargazers: { totalCount: number }
+  viewerHasStarred: boolean
+  issues: Issues
+}
+
 export type RepositoryResponse = {
   node: Repository
 }

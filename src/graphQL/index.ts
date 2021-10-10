@@ -1,4 +1,13 @@
 import { gql } from '@apollo/client'
+import { GraphQLClient } from 'graphql-request'
+
+const endpoint = 'https://api.github.com/graphql'
+const token = process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN
+export const graphQLClient = new GraphQLClient(endpoint, {
+  headers: {
+    authorization: `Bearer ${token}`,
+  },
+})
 
 // リポジトリ取得
 export const GET_REPOSITORIES = gql`
@@ -59,12 +68,45 @@ export const GET_REPOSITORY = gql`
   }
 `
 
+// リポジトリ詳細取得
+export const GET_ISSUES = gql`
+  query ($id: ID!, $limit: Int, $cursor: String) {
+    node(id: $id) {
+      ... on Repository {
+        id
+        issues(
+          first: $limit
+          after: $cursor
+          orderBy: { field: CREATED_AT, direction: DESC }
+        ) {
+          edges {
+            node {
+              id
+              title
+              body
+              url
+            }
+          }
+          pageInfo {
+            startCursor
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+    }
+  }
+`
+
 export const ADD_STAR_REPOSITORY = gql`
   mutation ($id: ID!) {
     addStar(input: { starrableId: $id }) {
       starrable {
         id
         viewerHasStarred
+        stargazers {
+          totalCount
+        }
       }
     }
   }
@@ -76,6 +118,9 @@ export const REMOVE_STAR_REPOSITORY = gql`
       starrable {
         id
         viewerHasStarred
+        stargazers {
+          totalCount
+        }
       }
     }
   }

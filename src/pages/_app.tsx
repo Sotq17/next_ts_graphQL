@@ -1,7 +1,8 @@
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
 import { relayStylePagination } from '@apollo/client/utilities'
-import { RecoilRoot } from 'recoil'
 import type { AppProps } from 'next/app'
+import { Provider } from 'react-redux'
+import store from '../store/slices'
 import GlobalStyle from '../style/GlobalStyle'
 
 const token = process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN
@@ -22,12 +23,12 @@ const client = new ApolloClient({
 
 const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
   return (
-    <RecoilRoot>
+    <Provider store={store}>
       <ApolloProvider client={client}>
         <GlobalStyle />
         <Component {...pageProps} />
       </ApolloProvider>
-    </RecoilRoot>
+    </Provider>
   )
 }
 export default MyApp

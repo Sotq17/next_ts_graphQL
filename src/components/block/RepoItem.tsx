@@ -8,17 +8,11 @@ import { Refetch, Repository } from '../../types'
 
 type Props = {
   data: Repository
-  refetch: Refetch
   linkText: string
   linkHref: string
 }
 
-export const RepoItem: React.FC<Props> = ({
-  data,
-  refetch,
-  linkText,
-  linkHref,
-}) => {
+export const RepoItem: React.FC<Props> = ({ data, linkText, linkHref }) => {
   return (
     <div key={data.name} css={itemContainer}>
       <div css={itemTitle}>
@@ -26,7 +20,7 @@ export const RepoItem: React.FC<Props> = ({
         <Star
           id={data.id}
           hasStarred={!data.viewerHasStarred}
-          refetch={refetch}
+          // refetch={refetch}
         />
       </div>
       <div css={itemBody}>

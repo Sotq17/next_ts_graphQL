@@ -16,17 +16,19 @@
     "@babel/core": "^7.15.5",
     "@emotion/babel-preset-css-prop": "^11.2.0",
     "@emotion/react": "^11.4.1",
+    "@reduxjs/toolkit": "^1.6.2",
     "@types/react-dom": "^17.0.9",
     "apollo-boost": "^0.4.9",
     "emotion": "^11.0.0",
     "graphql": "^15.5.3",
+    "graphql-request": "^3.5.0",
     "graphql-tag": "^2.12.5",
     "next": "11.1.2",
     "react": "17.0.2",
     "react-apollo": "^3.1.5",
     "react-dom": "17.0.2",
     "react-intersection-observer": "^8.32.1",
-    "recoil": "^0.4.1"
+    "react-redux": "^7.2.5"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.15.6",
