@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { css } from '@emotion/react'
-import { useMutation } from '@apollo/client'
-import { UPDATE_ISSUE } from '../../graphQL'
 
-import { Issue, Issues, IssuesState, SubmitProps } from '../../types'
+import { Issue, Issues, SubmitProps } from '../../types'
 
 import { ButtonSmall } from '../atom/ButtonSmall'
-import FixedSpinner from './FixedSpinner'
 import { useModal } from '../module/modal/useModal'
 import { FixedModal } from '../module/modal/FixedModal'
 import { ModalContent } from '../module/modal/ModalContent'
@@ -14,11 +12,9 @@ import { Close } from '../atom/Close'
 
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
 import { updateIssue } from '../../store/slices/repositorySlice'
-import { useDispatch } from 'react-redux'
 
-export type IssueItem = {
-  node: Issue
-  issues: IssuesState
+export type IssueItem = Issue & {
+  issues: Issues
   repositoryId: string
 }
 
@@ -58,14 +54,6 @@ export const IssueItem: React.FC<IssueItem> = ({
         body: body,
       })
     )
-    // const updatedIssue = data.updateIssue
-    // const newIssues = issues.edges.map(edge => {
-    //   if (edge.node.id === updatedIssue.issue.id) {
-    //     return { node: updatedIssue.issue }
-    //   } else {
-    //     return edge
-    //   }
-    // })
     toggle()
   }
 
