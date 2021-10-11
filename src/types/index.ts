@@ -6,16 +6,25 @@ import {
 } from '@apollo/client'
 import { GraphQLError } from 'graphql'
 
+export type FIXME = any
+
 export type Issue = {
-  node: {
-    id: string
-    title: string
-    body: string
-    url: string
-  }
+  id: string
+  title: string
+  body: string
+  url: string
 }
 
 export type Issues = {
+  edges: { node: Issue }[]
+  pageInfo?: {
+    endCursor: string
+    hasNextPage: boolean
+    startCursor: string
+  }
+}
+
+export type IssuesState = {
   edges: Issue[]
   pageInfo?: {
     endCursor: string
@@ -30,16 +39,7 @@ export type Repository = {
   url: string
   stargazers: { totalCount: number }
   viewerHasStarred: boolean
-  issues: Issues
-}
-
-export type RepositoryState = {
-  id: string
-  name: string
-  url: string
-  stargazers: { totalCount: number }
-  viewerHasStarred: boolean
-  issues: Issues
+  issues: IssuesState
 }
 
 export type RepositoryResponse = {
@@ -63,4 +63,11 @@ export type SubmitProps = {
   id: string
   title: string
   body: string
+}
+
+export type SubmitPropsWithRepoId = {
+  id: string
+  title: string
+  body: string
+  repositoryId: string
 }

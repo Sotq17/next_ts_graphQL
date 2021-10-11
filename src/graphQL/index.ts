@@ -1,5 +1,4 @@
-import { gql } from '@apollo/client'
-import { GraphQLClient } from 'graphql-request'
+import { GraphQLClient, gql } from 'graphql-request'
 
 const endpoint = 'https://api.github.com/graphql'
 const token = process.env.NEXT_PUBLIC_GITHUB_ACCESS_TOKEN

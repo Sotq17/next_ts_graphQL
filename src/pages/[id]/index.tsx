@@ -250,7 +250,14 @@ import { useRouter } from 'next/dist/client/router'
 import dynamic from 'next/dynamic'
 
 import { CREATE_ISSUE, GET_REPOSITORY } from '../../graphQL'
-import { Issues, Repository, SubmitProps } from '../../types'
+import {
+  FIXME,
+  Issue,
+  Issues,
+  IssuesState,
+  Repository,
+  SubmitProps,
+} from '../../types'
 
 import { Layout } from '../../components/layout/Layout'
 import { RepoItem } from '../../components/block/RepoItem'
@@ -267,6 +274,7 @@ import { SpinnerSmall } from '../../components/atom/Spinner'
 import { useInView } from 'react-intersection-observer'
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  addIssue,
   fetchIssues,
   fetchMoreIssues,
   fetchReposirories,
@@ -305,28 +313,17 @@ const Detail: NextPage = () => {
   // 新規issue作成用
   const [issueTitle, setIssueTitle] = useState('')
   const [issueContent, setIssueContent] = useState('')
-  const [createIssue, { loading: createLoading }] = useMutation(CREATE_ISSUE)
 
   // modal表示/非表示用
   const { isShowing, toggle } = useModal()
-  // const submitIssue = async ({ id, title, body }: SubmitProps) => {
-  //   const result = await createIssue({
-  //     variables: { id: id, title: title, body: body },
-  //   })
-  //   const newIssues = {
-  //     edges: issues?.edges
-  //       ? [{ node: result.data.createIssue.issue }, ...issues?.edges]
-  //       : [{ node: result.data.createIssue.issue }],
-  //     pageInfo: issues?.pageInfo,
-  //   }
-  //   setIssues(newIssues)
-  //   setIssueTitle('')
-  //   setIssueContent('')
-  //   toggle()
-  // }
+  const submitIssue = async ({ id, title, body }: SubmitProps) => {
+    dispatch(addIssue({ id: id, title: title, body: body }))
+    setIssueTitle('')
+    setIssueContent('')
+    toggle()
+  }
 
   // 無限スクロール用
-  const renderFlgRef = useRef(false)
   const { ref, inView } = useInView({
     threshold: 0,
   })
@@ -336,30 +333,35 @@ const Detail: NextPage = () => {
     if (!inView || !repo) {
       return
     }
-    if (renderFlgRef.current) {
-      dispatch(
-        fetchMoreIssues({
-          id: repo?.id,
-          limit: limit,
-          cursor: repo?.issues?.pageInfo?.endCursor,
-        })
-      )
-    } else {
-      renderFlgRef.current = true
-    }
+
+    dispatch(
+      fetchMoreIssues({
+        id: repo?.id,
+        limit: limit,
+        cursor: repo?.issues?.pageInfo?.endCursor,
+      })
+    )
   }, [inView])
+
+  // let issues: { node: Issue }[] | undefined
+
+  // if (repo?.issues?.edges) {
+  //   issues = Object.entries(repo?.issues?.edges).map(([key, value]) => {
+  //     return { node: value }
+  //   })
+  // }
 
   return (
     <Layout>
       {loading && <FixedSpinner />}
-      {createLoading && <FixedSpinner />}
+      {/* {createLoading && <FixedSpinner />} */}
       {isShowing && (
         <FixedModal>
           <div css={modalContainer}>
             <button onClick={toggle} css={closeButton}>
               <Close />
             </button>
-            {/* <div css={modalFormBox}>
+            <div css={modalFormBox}>
               {repo && (
                 <ModalContent
                   id={repo.id}
@@ -370,7 +372,7 @@ const Detail: NextPage = () => {
                   func={submitIssue}
                 />
               )}
-            </div> */}
+            </div>
           </div>
         </FixedModal>
       )}
@@ -387,13 +389,18 @@ const Detail: NextPage = () => {
             </div>
 
             <ul>
-              {repo?.issues?.edges?.map((issue, index) => {
-                return (
-                  <li css={issueItemContainer} key={index}>
-                    <IssueItem node={issue.node} issues={repo.issues} />
-                  </li>
-                )
-              })}
+              {repo?.issues?.edges &&
+                repo?.issues?.edges.map((issue, index) => {
+                  return (
+                    <li css={issueItemContainer} key={index}>
+                      <IssueItem
+                        node={issue.node}
+                        issues={repo.issues}
+                        repositoryId={repo.id}
+                      />
+                    </li>
+                  )
+                })}
             </ul>
             {repo?.issues?.pageInfo?.hasNextPage && (
               <div css={spinnerWrap} ref={ref}>

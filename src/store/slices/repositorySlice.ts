@@ -4,15 +4,44 @@ import {
   createEntityAdapter,
   current,
 } from '@reduxjs/toolkit'
+
 import { RootState } from '.'
 import {
   ADD_STAR_REPOSITORY,
+  CREATE_ISSUE,
   GET_ISSUES,
   GET_REPOSITORIES,
   graphQLClient,
   REMOVE_STAR_REPOSITORY,
+  UPDATE_ISSUE,
 } from '../../graphQL'
-import { Issue, Issues, Repository } from '../../types'
+import {
+  FIXME,
+  Issue,
+  Issues,
+  IssuesState,
+  Repository,
+  SubmitProps,
+  SubmitPropsWithRepoId,
+} from '../../types'
+
+type Props = {
+  currentIssues?: IssuesState | undefined
+  issues: Issues
+}
+const getNewIssues = ({ currentIssues, issues }: Props) => {
+  const EdgeObj: any = {}
+  for (let i = 0; i < issues.edges.length; i += 1) {
+    const data = issues.edges[i]
+    EdgeObj[data.node.id] = data.node
+  }
+
+  const newIssues: Issues | undefined = {
+    edges: currentIssues ? { ...currentIssues?.edges, ...EdgeObj } : EdgeObj,
+    pageInfo: issues?.pageInfo,
+  }
+  return newIssues
+}
 
 // リポジトリ全体取得
 export const fetchReposirories = createAsyncThunk(
@@ -26,22 +55,14 @@ export const fetchReposirories = createAsyncThunk(
 // 特定のリポジトリのIssue取得
 export const fetchIssues = createAsyncThunk(
   'issues/get',
-  async ({
-    id,
-    limit,
-    cursor,
-  }: {
-    id: string
-    limit: number
-    cursor?: any
-  }) => {
+  async ({ id, limit }: { id: string; limit: number }) => {
     const variables = { id: id, limit: limit }
     const data = await graphQLClient.request(GET_ISSUES, variables)
     // console.log(JSON.stringify(data, undefined, 2))
     return data
   }
 )
-
+// issue追加
 export const fetchMoreIssues = createAsyncThunk(
   'moreIssues/get',
   async ({
@@ -57,6 +78,40 @@ export const fetchMoreIssues = createAsyncThunk(
     const data = await graphQLClient.request(GET_ISSUES, variables)
     // console.log(JSON.stringify(data, undefined, 2))
     return data
+  }
+)
+
+export const addIssue = createAsyncThunk(
+  'addIssue',
+  async ({ id, title, body }: SubmitProps) => {
+    const variables = {
+      id: id,
+      title: title,
+      body: body,
+    }
+    const data = await graphQLClient.request(CREATE_ISSUE, variables)
+    const res = {
+      data: data,
+      repositoryId: id,
+    }
+    return res
+  }
+)
+
+export const updateIssue = createAsyncThunk(
+  'updateIssue',
+  async ({ id, title, repositoryId, body }: SubmitPropsWithRepoId) => {
+    const variables = {
+      id: id,
+      title: title,
+      body: body,
+    }
+    const data = await graphQLClient.request(UPDATE_ISSUE, variables)
+    const res = {
+      data: data,
+      repositoryId: repositoryId,
+    }
+    return res
   }
 )
 
@@ -118,6 +173,7 @@ const repositorySlice = createSlice({
         })
       })
 
+      // issue取得
       .addCase(fetchIssues.pending, state => {
         state.loading = true
       })
@@ -127,32 +183,111 @@ const repositorySlice = createSlice({
       .addCase(fetchIssues.fulfilled, (state, action) => {
         const { id, issues } = action.payload.node
         state.loading = false
-        console.log({ issues })
+
+        // const newIssues: FIXME = getNewIssues({ issues })
 
         repoAdapter.updateOne(state, {
           id: id,
           changes: { issues: issues },
+          // changes: { issues: newIssues },
         })
       })
 
+      // issue追加取得
       .addCase(fetchMoreIssues.fulfilled, (state, action) => {
         const { id, issues } = action.payload.node
-        const currentIssues: Issues | undefined = current(
+        const currentIssues: IssuesState | undefined = current(
           state.entities[id]?.issues
         )
 
-        const newIssues: Issues | undefined = {
-          edges: currentIssues
-            ? currentIssues?.edges.concat(issues.edges)
-            : issues.edges,
-          pageInfo: issues?.pageInfo,
+        const newData = issues
+        const newIssues = {
+          edges: currentIssues?.edges
+            ? [...currentIssues?.edges, ...newData.edges]
+            : newData.edges,
+          pageInfo: newData.pageInfo,
         }
-        console.log({ newIssues })
 
         repoAdapter.updateOne(state, {
           id: id,
           changes: { issues: newIssues },
         })
+      })
+
+      // issue作成
+      .addCase(addIssue.pending, state => {
+        state.loading = true
+      })
+      .addCase(addIssue.rejected, (state, action) => {
+        state.loading = false
+      })
+      .addCase(addIssue.fulfilled, (state, action) => {
+        const { repositoryId, data } = action.payload
+
+        const currentIssues: IssuesState | undefined = current(
+          state.entities[repositoryId]?.issues
+        )
+        console.log(currentIssues)
+
+        const newArray = currentIssues?.edges.map(item => item)
+        console.log(data.createIssue.issue)
+
+        console.log(newArray)
+        console.log(newArray?.unshift(data.createIssue.issue))
+
+        const newIssuesArray = newArray
+          ? newArray.unshift(data.createIssue.issue)
+          : [data.createIssue.issue]
+
+        const newIssues: FIXME = {
+          edges: newIssuesArray,
+          pageInfo: currentIssues?.pageInfo,
+        }
+        console.log(newIssues)
+
+        // const newIssues = getNewIssues({ newIssue, currentIssues })
+        repoAdapter.updateOne(state, {
+          id: repositoryId,
+          changes: { issues: newIssues },
+        })
+
+        state.loading = false
+      })
+
+      // issue変更
+      .addCase(updateIssue.pending, state => {
+        state.loading = true
+      })
+      .addCase(updateIssue.rejected, (state, action) => {
+        state.loading = false
+      })
+      .addCase(updateIssue.fulfilled, (state, action) => {
+        const { repositoryId, data } = action.payload
+
+        const currentIssues: any = current(state.entities[repositoryId]?.issues)
+
+        const updatedIssue = data.updateIssue
+        const newIssuesArray = currentIssues.edges.map(
+          (edge: { node: Issue }) => {
+            if (edge.node.id === updatedIssue.issue.id) {
+              return { node: updatedIssue.issue }
+            } else {
+              return edge
+            }
+          }
+        )
+
+        const newIssues: FIXME = {
+          edges: newIssuesArray,
+          pageInfo: currentIssues?.pageInfo,
+        }
+
+        repoAdapter.updateOne(state, {
+          id: repositoryId,
+          changes: { issues: newIssues },
+        })
+
+        state.loading = false
       })
   },
 })

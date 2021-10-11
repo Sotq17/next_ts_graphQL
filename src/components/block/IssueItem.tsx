@@ -3,7 +3,7 @@ import { css } from '@emotion/react'
 import { useMutation } from '@apollo/client'
 import { UPDATE_ISSUE } from '../../graphQL'
 
-import { Issue, Issues, SubmitProps } from '../../types'
+import { Issue, Issues, IssuesState, SubmitProps } from '../../types'
 
 import { ButtonSmall } from '../atom/ButtonSmall'
 import FixedSpinner from './FixedSpinner'
@@ -13,13 +13,22 @@ import { ModalContent } from '../module/modal/ModalContent'
 import { Close } from '../atom/Close'
 
 import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
+import { updateIssue } from '../../store/slices/repositorySlice'
+import { useDispatch } from 'react-redux'
 
-export type IssueItem = Issue & {
-  issues: Issues
-  setIssues: React.Dispatch<React.SetStateAction<Issues | undefined>>
+export type IssueItem = {
+  node: Issue
+  issues: IssuesState
+  repositoryId: string
 }
 
-export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
+export const IssueItem: React.FC<IssueItem> = ({
+  node,
+  issues,
+  repositoryId,
+}) => {
+  const dispatch = useDispatch()
+
   // modal表示/非表示用
   const { isShowing, toggle } = useModal()
 
@@ -36,28 +45,33 @@ export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
     }
   }, [node])
 
-  const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
+  // const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
 
+  // node.id
   // 更新されたissueをissues配列に反映
   const submitIssue = async ({ id, title, body }: SubmitProps) => {
-    const { data } = await updateIssue({
-      variables: { id: id, title: title, body: body },
-    })
-    const updatedIssue = data.updateIssue
-    const newIssues = issues.edges.map(edge => {
-      if (edge.node.id === updatedIssue.issue.id) {
-        return { node: updatedIssue.issue }
-      } else {
-        return edge
-      }
-    })
-    setIssues({ edges: newIssues, pageInfo: issues.pageInfo })
+    dispatch(
+      updateIssue({
+        id: id,
+        repositoryId: repositoryId,
+        title: title,
+        body: body,
+      })
+    )
+    // const updatedIssue = data.updateIssue
+    // const newIssues = issues.edges.map(edge => {
+    //   if (edge.node.id === updatedIssue.issue.id) {
+    //     return { node: updatedIssue.issue }
+    //   } else {
+    //     return edge
+    //   }
+    // })
     toggle()
   }
 
   return (
     <>
-      {loading && <FixedSpinner />}
+      {/* {loading && <FixedSpinner />} */}
       {isShowing && (
         <FixedModal>
           <div css={modalContainer}>
