@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 
 import { RepoItem } from '../components/block/RepoItem'
 
-import store from '../store/slices'
+import store from '../store'
 
 const repo = {
   id: 'MDEwOlJlcG9zaXRvcnk0MDczMzM5MjQ=',

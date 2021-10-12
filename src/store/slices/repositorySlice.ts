@@ -15,7 +15,7 @@ import {
   UPDATE_ISSUE,
 } from '../../graphQL'
 
-import { RootState } from '.'
+import { RootState } from '..'
 import {
   Issue,
   Issues,
