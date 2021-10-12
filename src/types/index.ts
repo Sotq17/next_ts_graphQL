@@ -1,10 +1,4 @@
-import {
-  ApolloError,
-  ApolloQueryResult,
-  NetworkStatus,
-  OperationVariables,
-} from '@apollo/client'
-import { GraphQLError } from 'graphql'
+export type FIXME = any
 
 export type Issue = {
   node: {
@@ -37,21 +31,15 @@ export type RepositoryResponse = {
   node: Repository
 }
 
-export type Refetch = (
-  variables?: Partial<OperationVariables> | undefined
-) => Promise<ApolloQueryResult<T>>
-
-type T = {
-  data: T
-  errors?: readonly GraphQLError[] | undefined
-  error?: ApolloError | undefined
-  loading: boolean
-  networkStatus: NetworkStatus
-  partial?: boolean | undefined
-}
-
 export type SubmitProps = {
   id: string
   title: string
   body: string
+}
+
+export type SubmitPropsWithRepoId = {
+  id: string
+  title: string
+  body: string
+  repositoryId: string
 }

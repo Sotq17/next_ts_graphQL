@@ -52,6 +52,8 @@ $npm run lint:fix
     ├── graphQL (graphQLの定義)
     ├── pages
     │   └── [id]
+    ├── store (redux / store管理のディレクトリ)
+    │   └── slices(各sliceの管理 / 非同期処理などもこちらにまとめる)
     ├── style (切り分けたCSS in JS)
     ├── test (テストファイル置き場)
     └── types (切り分けた型ファイル)

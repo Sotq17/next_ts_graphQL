@@ -1,44 +1,30 @@
 import React from 'react'
-import { useMutation } from '@apollo/client'
+
 import { css } from '@emotion/react'
-
-import { ADD_STAR_REPOSITORY, REMOVE_STAR_REPOSITORY } from '../../graphQL'
-
-import { Refetch } from '../../types'
+import { addStar, removeStar } from '../../store/slices/repositorySlice'
+import { useDispatch } from 'react-redux'
 
 type Props = {
   id: string
   hasStarred: boolean
-  refetch?: Refetch
 }
 
-export const Star: React.FC<Props> = ({ id, hasStarred, refetch }) => {
-  const [addStar] = useMutation(ADD_STAR_REPOSITORY, {
-    onCompleted() {
-      refetch && refetch()
-    },
-  })
-  const [removeStar] = useMutation(REMOVE_STAR_REPOSITORY, {
-    onCompleted() {
-      refetch && refetch()
-    },
-  })
-
+export const Star: React.FC<Props> = ({ id, hasStarred }) => {
+  const dispatch = useDispatch()
   return (
     <>
-      {/* 既にstarしてあるかどうかで出し分け */}
       {hasStarred ? (
         <button
           css={[icon]}
           onClick={() => {
-            addStar({ variables: { id: id } })
+            dispatch(addStar(id))
           }}
         />
       ) : (
         <button
           css={[icon, isStarred]}
           onClick={() => {
-            removeStar({ variables: { id: id } })
+            dispatch(removeStar(id))
           }}
         />
       )}

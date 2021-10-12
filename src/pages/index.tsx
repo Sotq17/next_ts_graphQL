@@ -1,8 +1,14 @@
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
-import { useQuery } from '@apollo/client'
 import dynamic from 'next/dynamic'
-import { GET_REPOSITORIES } from '../graphQL'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect } from 'react'
+
+import {
+  fetchReposirories,
+  selectRepositories,
+  selectRepositoriesLoading,
+} from '../store/slices/repositorySlice'
 
 import { Repository } from '../types'
 
@@ -15,23 +21,29 @@ const FixedSpinner = dynamic(() => import('../components/block/FixedSpinner'), {
 })
 
 const Home: NextPage = () => {
-  const { loading, error, data, refetch } = useQuery(GET_REPOSITORIES)
-  const repositories: Repository[] = data?.viewer.repositories?.nodes
+  const repositories: Repository[] = useSelector(selectRepositories.selectAll)
+  const loading = useSelector(selectRepositoriesLoading)
 
-  if (error) return <p>Error: {JSON.stringify(error)}</p>
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (repositories.length) {
+      return
+    }
+    dispatch(fetchReposirories())
+  }, [])
+
   return (
     <Layout>
       {loading && <FixedSpinner />}
-      {error && <p>Error: {JSON.stringify(error)}</p>}
       <ul css={repositoryContainer}>
         {repositories?.map(repo => {
           return (
             <li key={repo.id}>
               <RepoItem
                 data={repo}
-                refetch={refetch}
                 linkText='Detail'
-                linkHref={`./${repo.id}`}
+                linkHref={`./${repo.name}`}
               />
             </li>
           )

@@ -1,81 +1,62 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import { css } from '@emotion/react'
-import { useMutation } from '@apollo/client'
-import { UPDATE_ISSUE } from '../../graphQL'
 
-import { Issue, Issues, SubmitProps } from '../../types'
+import { updateIssue } from '../../store/slices/repositorySlice'
+
+import { Issue, SubmitProps } from '../../types'
 
 import { ButtonSmall } from '../atom/ButtonSmall'
-import FixedSpinner from './FixedSpinner'
 import { useModal } from '../module/modal/useModal'
 import { FixedModal } from '../module/modal/FixedModal'
-import { ModalContent } from '../module/modal/ModalContent'
-import { Close } from '../atom/Close'
-
-import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
 
 export type IssueItem = Issue & {
-  issues: Issues
-  setIssues: React.Dispatch<React.SetStateAction<Issues | undefined>>
+  repositoryId: string
 }
 
-export const IssueItem: React.FC<IssueItem> = ({ node, issues, setIssues }) => {
+export const IssueItem: React.FC<IssueItem> = ({ node, repositoryId }) => {
+  const dispatch = useDispatch()
+
   // modal表示/非表示用
-  const { isShowing, toggle } = useModal()
+  const {
+    isShowing,
+    toggle,
+    modalTitle,
+    setModalTitle,
+    modalContent,
+    setModalContent,
+  } = useModal()
 
-  // modalの表示内容
-  const [editTitle, setEditTitle] = useState(node.title)
-  const [editContent, setEditContent] = useState(node.body)
-  const renderFlgRef = useRef(false)
   useEffect(() => {
-    if (renderFlgRef.current) {
-      setEditTitle(node.title)
-      setEditContent(node.body)
-    } else {
-      renderFlgRef.current = true
-    }
+    setModalTitle(node.title)
+    setModalContent(node.body)
   }, [node])
-
-  const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
 
   // 更新されたissueをissues配列に反映
   const submitIssue = async ({ id, title, body }: SubmitProps) => {
-    const { data } = await updateIssue({
-      variables: { id: id, title: title, body: body },
-    })
-    const updatedIssue = data.updateIssue
-    const newIssues = issues.edges.map(edge => {
-      if (edge.node.id === updatedIssue.issue.id) {
-        return { node: updatedIssue.issue }
-      } else {
-        return edge
-      }
-    })
-    setIssues({ edges: newIssues, pageInfo: issues.pageInfo })
+    dispatch(
+      updateIssue({
+        id: id,
+        repositoryId: repositoryId,
+        title: title,
+        body: body,
+      })
+    )
     toggle()
   }
 
   return (
     <>
-      {loading && <FixedSpinner />}
       {isShowing && (
-        <FixedModal>
-          <div css={modalContainer}>
-            <button onClick={toggle} css={closeButton}>
-              <Close />
-            </button>
-            <div css={modalFormBox}>
-              <ModalContent
-                id={node.id}
-                title={editTitle}
-                content={editContent}
-                setTitle={setEditTitle}
-                setContent={setEditContent}
-                func={submitIssue}
-              />
-            </div>
-          </div>
-        </FixedModal>
+        <FixedModal
+          id={node.id}
+          title={modalTitle}
+          content={modalContent}
+          setTitle={setModalTitle}
+          setContent={setModalContent}
+          func={submitIssue}
+          toggle={toggle}
+        />
       )}
       <div css={issueContainer}>
         <div css={issueTitleContainer}>
