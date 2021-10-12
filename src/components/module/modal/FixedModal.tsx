@@ -1,12 +1,32 @@
-import React from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import { createPortal } from 'react-dom'
 import { css } from '@emotion/react'
 
+import { closeButton, modalContainer, modalFormBox } from '../../../style/modal'
+import { Close } from '../../atom/Close'
+import { ModalContent } from './ModalContent'
+
+import { SubmitProps } from '../../../types'
+
 type Props = {
-  children?: React.ReactNode
+  id: string
+  title: string
+  content: string
+  setTitle: Dispatch<SetStateAction<string>>
+  setContent: Dispatch<SetStateAction<string>>
+  func: ({ id, title, body }: SubmitProps) => Promise<void>
+  toggle: () => void
 }
 
-export const FixedModal: React.FC<Props> = ({ children }) => {
+export const FixedModal: React.FC<Props> = ({
+  id,
+  title,
+  content,
+  setTitle,
+  setContent,
+  func,
+  toggle,
+}) => {
   const app = document.getElementById('__next')
   if (!app) {
     return null
@@ -14,7 +34,23 @@ export const FixedModal: React.FC<Props> = ({ children }) => {
 
   return createPortal(
     <div css={modalOverRay}>
-      <div css={modalWrap}>{children}</div>
+      <div css={modalWrap}>
+        <div css={modalContainer}>
+          <button onClick={toggle} css={closeButton}>
+            <Close />
+          </button>
+          <div css={modalFormBox}>
+            <ModalContent
+              id={id}
+              title={title}
+              content={content}
+              setTitle={setTitle}
+              setContent={setContent}
+              func={func}
+            />
+          </div>
+        </div>
+      </div>
     </div>,
     app
   )

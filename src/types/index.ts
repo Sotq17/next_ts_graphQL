@@ -1,5 +1,3 @@
-import { GraphQLError } from 'graphql'
-
 export type FIXME = any
 
 export type Issue = {

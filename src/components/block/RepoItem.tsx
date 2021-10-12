@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { Star } from '../module/Star'
 
-import { Refetch, Repository } from '../../types'
+import { Repository } from '../../types'
 
 type Props = {
   data: Repository
@@ -13,15 +13,13 @@ type Props = {
 }
 
 export const RepoItem: React.FC<Props> = ({ data, linkText, linkHref }) => {
+  console.log(data)
+
   return (
     <div key={data.name} css={itemContainer}>
       <div css={itemTitle}>
         <p>{data.name}</p>
-        <Star
-          id={data.id}
-          hasStarred={!data.viewerHasStarred}
-          // refetch={refetch}
-        />
+        <Star id={data.id} hasStarred={!data.viewerHasStarred} />
       </div>
       <div css={itemBody}>
         <p css={itemBodyText}>URL: {data.url}</p>

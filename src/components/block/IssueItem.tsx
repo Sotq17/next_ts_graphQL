@@ -1,49 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { css } from '@emotion/react'
 
-import { Issue, Issues, SubmitProps } from '../../types'
+import { updateIssue } from '../../store/slices/repositorySlice'
+
+import { Issue, SubmitProps } from '../../types'
 
 import { ButtonSmall } from '../atom/ButtonSmall'
 import { useModal } from '../module/modal/useModal'
 import { FixedModal } from '../module/modal/FixedModal'
-import { ModalContent } from '../module/modal/ModalContent'
-import { Close } from '../atom/Close'
-
-import { closeButton, modalContainer, modalFormBox } from '../../style/modal'
-import { updateIssue } from '../../store/slices/repositorySlice'
 
 export type IssueItem = Issue & {
-  issues: Issues
   repositoryId: string
 }
 
-export const IssueItem: React.FC<IssueItem> = ({
-  node,
-  issues,
-  repositoryId,
-}) => {
+export const IssueItem: React.FC<IssueItem> = ({ node, repositoryId }) => {
   const dispatch = useDispatch()
 
   // modal表示/非表示用
-  const { isShowing, toggle } = useModal()
+  const {
+    isShowing,
+    toggle,
+    modalTitle,
+    setModalTitle,
+    modalContent,
+    setModalContent,
+  } = useModal()
 
-  // modalの表示内容
-  const [editTitle, setEditTitle] = useState(node.title)
-  const [editContent, setEditContent] = useState(node.body)
-  const renderFlgRef = useRef(false)
   useEffect(() => {
-    if (renderFlgRef.current) {
-      setEditTitle(node.title)
-      setEditContent(node.body)
-    } else {
-      renderFlgRef.current = true
-    }
+    setModalTitle(node.title)
+    setModalContent(node.body)
   }, [node])
 
-  // const [updateIssue, { loading }] = useMutation(UPDATE_ISSUE)
-
-  // node.id
   // 更新されたissueをissues配列に反映
   const submitIssue = async ({ id, title, body }: SubmitProps) => {
     dispatch(
@@ -59,25 +47,16 @@ export const IssueItem: React.FC<IssueItem> = ({
 
   return (
     <>
-      {/* {loading && <FixedSpinner />} */}
       {isShowing && (
-        <FixedModal>
-          <div css={modalContainer}>
-            <button onClick={toggle} css={closeButton}>
-              <Close />
-            </button>
-            <div css={modalFormBox}>
-              <ModalContent
-                id={node.id}
-                title={editTitle}
-                content={editContent}
-                setTitle={setEditTitle}
-                setContent={setEditContent}
-                func={submitIssue}
-              />
-            </div>
-          </div>
-        </FixedModal>
+        <FixedModal
+          id={node.id}
+          title={modalTitle}
+          content={modalContent}
+          setTitle={setModalTitle}
+          setContent={setModalContent}
+          func={submitIssue}
+          toggle={toggle}
+        />
       )}
       <div css={issueContainer}>
         <div css={issueTitleContainer}>
