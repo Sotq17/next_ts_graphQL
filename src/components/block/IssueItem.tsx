@@ -1,14 +1,9 @@
 import React, { Dispatch, SetStateAction } from 'react'
-import { useDispatch } from 'react-redux'
 import { css } from '@emotion/react'
 
-import { updateIssue } from '../../store/slices/repositorySlice'
-
-import { Issue, SubmitProps } from '../../types'
+import { Issue } from '../../types'
 
 import { ButtonSmall } from '../atom/ButtonSmall'
-import { useModal } from '../module/modal/useModal'
-import { FixedModal } from '../module/modal/FixedModal'
 
 export type IssueItem = Issue & {
   repositoryId: string
