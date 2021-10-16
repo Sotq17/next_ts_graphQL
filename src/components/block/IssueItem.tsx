@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import { useDispatch } from 'react-redux'
 import { css } from '@emotion/react'
 
@@ -12,57 +12,33 @@ import { FixedModal } from '../module/modal/FixedModal'
 
 export type IssueItem = Issue & {
   repositoryId: string
+  toggle: () => void
+  setTitle: Dispatch<SetStateAction<string>>
+  setContent: Dispatch<SetStateAction<string>>
+  setIsuueId: Dispatch<SetStateAction<string>>
 }
 
-export const IssueItem: React.FC<IssueItem> = ({ node, repositoryId }) => {
-  const dispatch = useDispatch()
-
-  // modal表示/非表示用
-  const {
-    isShowing,
-    toggle,
-    modalTitle,
-    setModalTitle,
-    modalContent,
-    setModalContent,
-  } = useModal()
-
-  useEffect(() => {
-    setModalTitle(node.title)
-    setModalContent(node.body)
-  }, [node])
-
-  // 更新されたissueをissues配列に反映
-  const submitIssue = async ({ id, title, body }: SubmitProps) => {
-    dispatch(
-      updateIssue({
-        id: id,
-        repositoryId: repositoryId,
-        title: title,
-        body: body,
-      })
-    )
+export const IssueItem: React.FC<IssueItem> = ({
+  node,
+  toggle,
+  setTitle,
+  setContent,
+  setIsuueId,
+}) => {
+  const editToggle = () => {
+    setIsuueId(node.id)
+    setTitle(node.title)
+    setContent(node.body)
     toggle()
   }
 
   return (
     <>
-      {isShowing && (
-        <FixedModal
-          id={node.id}
-          title={modalTitle}
-          content={modalContent}
-          setTitle={setModalTitle}
-          setContent={setModalContent}
-          func={submitIssue}
-          toggle={toggle}
-        />
-      )}
       <div css={issueContainer}>
         <div css={issueTitleContainer}>
           <p css={issueTitle}>{node.title}</p>
           <div>
-            <ButtonSmall text='Edit Issue' func={toggle} />
+            <ButtonSmall text='Edit Issue' func={editToggle} />
           </div>
         </div>
 

@@ -25,6 +25,7 @@ import {
 } from '../../types'
 
 // 【関数】
+
 // リポジトリ全体取得
 export const fetchReposirories = createAsyncThunk(
   'repositries/get',
@@ -199,7 +200,6 @@ const repositorySlice = createSlice({
           edges: newIssuesArray,
           pageInfo: currentIssues?.pageInfo,
         }
-        console.log(newIssues)
 
         repoAdapter.updateOne(state, {
           id: repositoryId,
@@ -232,6 +232,9 @@ const repositorySlice = createSlice({
           }
         })
 
+        // if (currentIssues?.edges) {
+        //   return
+        // }
         const newIssues: Issues | undefined = {
           edges: newIssuesArray || currentIssues?.edges,
           pageInfo: currentIssues?.pageInfo,

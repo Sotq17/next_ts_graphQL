@@ -1,9 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/dist/client/router'
 import dynamic from 'next/dynamic'
-import { useInView } from 'react-intersection-observer'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -13,6 +12,7 @@ import {
   fetchReposirories,
   selectRepositories,
   selectRepositoriesLoading,
+  updateIssue,
 } from '../../store/slices/repositorySlice'
 
 import { Repository, SubmitProps } from '../../types'
@@ -25,6 +25,7 @@ import { Button } from '../../components/atom/Button'
 import { IssueItem } from '../../components/block/IssueItem'
 
 import { mediaPc } from '../../style/variables'
+import { InView } from '../../components/module/InView'
 import { SpinnerSmall } from '../../components/atom/Spinner'
 
 const FixedSpinner = dynamic(
@@ -48,15 +49,14 @@ const Detail: NextPage = () => {
   )
 
   // repositoriesが取得できていない場合→リポジトリ全体をfetch
-  // 取得できている場合→issueをfetch
   const limit = 10
+  if (!repo) {
+    dispatch(fetchReposirories())
+  }
+  // 初期のissue取得
   useEffect(() => {
-    if (repo?.issues?.edges.length) {
-      return
-    }
-    if (!repo) {
-      dispatch(fetchReposirories())
-    } else {
+    // すでにissueが取得されていない場合かつ、リポジトリが存在する場合取得
+    if (!repo?.issues?.edges.length && repo) {
       dispatch(fetchIssues({ id: repo?.id, limit: limit }))
     }
   }, [repo?.id])
@@ -78,13 +78,38 @@ const Detail: NextPage = () => {
     toggle()
   }
 
-  // issue追加取得
-  const { ref, inView } = useInView({
-    threshold: 0,
-  })
+  // 編集用modal
+  const [issueId, setIsuueId] = useState('')
+  const {
+    isShowing: isEditShowing,
+    toggle: editToggle,
+    modalTitle: editModalTitle,
+    setModalTitle: setEditModalTitle,
+    modalContent: editModalContent,
+    setModalContent: setEditModalContent,
+  } = useModal()
 
-  useEffect(() => {
-    if (!inView || !repo) {
+  // 更新されたissueをissues配列に反映
+  const editIssue = async ({ id, title, body }: SubmitProps) => {
+    if (repo) {
+      dispatch(
+        updateIssue({
+          id: id,
+          repositoryId: repo.id,
+          title: title,
+          body: body,
+        })
+      )
+    }
+    setEditModalTitle('')
+    setEditModalContent('')
+    setIsuueId('')
+    editToggle()
+  }
+
+  // 追加情報取得
+  const fetchMore = () => {
+    if (!repo) {
       return
     }
     dispatch(
@@ -94,51 +119,76 @@ const Detail: NextPage = () => {
         cursor: repo?.issues?.pageInfo?.endCursor,
       })
     )
-  }, [inView])
+  }
 
   return (
     <Layout>
       {loading && <FixedSpinner />}
-      {isShowing && repo && (
-        <FixedModal
-          id={repo.id}
-          title={modalTitle}
-          content={modalContent}
-          setTitle={setModalTitle}
-          setContent={setModalContent}
-          func={submitIssue}
-          toggle={toggle}
-        />
-      )}
-
       {repo && (
-        <div css={detailContainer}>
-          <div css={repoItemContainer}>
-            <RepoItem data={repo} linkText='Home' linkHref='/' />
-          </div>
+        <Fragment>
+          {/* 新規issue追加用modal */}
+          {isShowing && (
+            <FixedModal
+              id={repo.id}
+              title={modalTitle}
+              content={modalContent}
+              setTitle={setModalTitle}
+              setContent={setModalContent}
+              func={submitIssue}
+              toggle={toggle}
+            />
+          )}
 
-          <div css={issuesContainer}>
-            <div css={buttonContainer}>
-              <Button text='New Issue' func={toggle} />
+          {/* issue編集用modal */}
+          {isEditShowing && (
+            <FixedModal
+              id={issueId}
+              title={editModalTitle}
+              content={editModalContent}
+              setTitle={setEditModalTitle}
+              setContent={setEditModalContent}
+              func={editIssue}
+              toggle={editToggle}
+            />
+          )}
+
+          <div css={detailContainer}>
+            <div css={repoItemContainer}>
+              <RepoItem data={repo} linkText='Home' linkHref='/' />
             </div>
 
-            <ul>
-              {repo?.issues?.edges &&
-                repo.issues.edges.map((issue, index) => {
-                  return (
-                    <li css={issueItemContainer} key={index}>
-                      <IssueItem node={issue.node} repositoryId={repo.id} />
-                    </li>
-                  )
-                })}
-            </ul>
-            {repo?.issues?.pageInfo?.hasNextPage && (
-              <div css={spinnerWrap} ref={ref}>
-                <SpinnerSmall />
+            <div css={issuesContainer}>
+              <div css={buttonContainer}>
+                <Button text='New Issue' func={toggle} />
               </div>
-            )}
+
+              <ul>
+                {repo.issues?.edges &&
+                  repo.issues.edges.map((issue, index) => {
+                    return (
+                      <li css={issueItemContainer} key={index}>
+                        <IssueItem
+                          node={issue.node}
+                          repositoryId={repo.id}
+                          toggle={editToggle}
+                          setTitle={setEditModalTitle}
+                          setContent={setEditModalContent}
+                          setIsuueId={setIsuueId}
+                        />
+                      </li>
+                    )
+                  })}
+              </ul>
+              {repo.issues?.pageInfo?.hasNextPage && (
+                <InView func={fetchMore}>
+                  <div css={spinnerWrap}>
+                    <SpinnerSmall />
+                  </div>
+                </InView>
+              )}
+            </div>
           </div>
-        </div>
+        </Fragment>
       )}
     </Layout>
   )

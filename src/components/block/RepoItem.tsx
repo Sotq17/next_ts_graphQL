@@ -13,8 +13,6 @@ type Props = {
 }
 
 export const RepoItem: React.FC<Props> = ({ data, linkText, linkHref }) => {
-  console.log(data)
-
   return (
     <div key={data.name} css={itemContainer}>
       <div css={itemTitle}>
