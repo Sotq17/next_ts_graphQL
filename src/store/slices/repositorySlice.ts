@@ -232,11 +232,8 @@ const repositorySlice = createSlice({
           }
         })
 
-        // if (currentIssues?.edges) {
-        //   return
-        // }
         const newIssues: Issues | undefined = {
-          edges: newIssuesArray || currentIssues?.edges,
+          edges: newIssuesArray || currentIssues?.edges || [],
           pageInfo: currentIssues?.pageInfo,
         }
 
