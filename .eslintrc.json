@@ -1,5 +1,4 @@
 {
-  // "extends": ["@wiz-creative/eslint-config/presets/next"]
   "extends":[
     "next",
     "./lib/prettier.js",

@@ -47,13 +47,13 @@ const Detail: NextPage = () => {
   const repo: Repository | undefined = repositories.find(
     (repo: Repository) => repo.name === id
   )
-
   // repositoriesが取得できていない場合→リポジトリ全体をfetch
-  const limit = 10
   if (!repo) {
     dispatch(fetchReposirories())
   }
+
   // 初期のissue取得
+  const limit = 10
   useEffect(() => {
     // すでにissueが取得されていない場合かつ、リポジトリが存在する場合取得
     if (!repo?.issues?.edges.length && repo) {
