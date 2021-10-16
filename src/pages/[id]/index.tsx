@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react'
+import { useState, Fragment } from 'react'
 import { css } from '@emotion/react'
 import type { NextPage } from 'next'
 import { useRouter } from 'next/dist/client/router'
@@ -53,13 +53,11 @@ const Detail: NextPage = () => {
   }
 
   // 初期のissue取得
+  // すでにissueが取得されていない場合かつ、リポジトリが存在する場合取得
   const limit = 10
-  useEffect(() => {
-    // すでにissueが取得されていない場合かつ、リポジトリが存在する場合取得
-    if (!repo?.issues?.edges.length && repo) {
-      dispatch(fetchIssues({ id: repo?.id, limit: limit }))
-    }
-  }, [repo?.id])
+  if (!repo?.issues?.edges.length && repo) {
+    dispatch(fetchIssues({ id: repo?.id, limit: limit }))
+  }
 
   // 新規issue追加用modal
   const {
