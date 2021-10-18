@@ -11,7 +11,7 @@ export type Issue = {
 
 export type Issues = {
   edges: Issue[]
-  totalCount: number
+  totalCount?: number
   pageInfo: {
     endCursor: string
     hasNextPage: boolean
