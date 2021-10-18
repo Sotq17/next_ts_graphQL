@@ -163,11 +163,15 @@ const repositorySlice = createSlice({
           state.entities[id]?.issues
         )
 
+        if (!currentIssues) {
+          return
+        }
         const newData = issues
         const newIssues = {
-          edges: currentIssues?.edges
-            ? [...currentIssues?.edges, ...newData.edges]
+          edges: currentIssues.edges
+            ? [...currentIssues.edges, ...newData.edges]
             : newData.edges,
+          totalCount: currentIssues.totalCount,
           pageInfo: newData.pageInfo,
         }
 
@@ -189,6 +193,9 @@ const repositorySlice = createSlice({
         const currentIssues: Issues | undefined = current(
           state.entities[repositoryId]?.issues
         )
+        if (!currentIssues) {
+          return
+        }
 
         const newDataArray = [{ node: data.createIssue.issue }]
 
@@ -198,6 +205,7 @@ const repositorySlice = createSlice({
 
         const newIssues = {
           edges: newIssuesArray,
+          totalCount: currentIssues.totalCount,
           pageInfo: currentIssues?.pageInfo,
         }
 
@@ -223,6 +231,10 @@ const repositorySlice = createSlice({
           state.entities[repositoryId]?.issues
         )
 
+        if (!currentIssues) {
+          return
+        }
+
         const updatedIssue = data.updateIssue
         const newIssuesArray = currentIssues?.edges.map((edge: Issue) => {
           if (edge.node.id === updatedIssue.issue.id) {
@@ -234,6 +246,7 @@ const repositorySlice = createSlice({
 
         const newIssues: Issues | undefined = {
           edges: newIssuesArray || currentIssues?.edges || [],
+          totalCount: currentIssues.totalCount,
           pageInfo: currentIssues?.pageInfo,
         }
 

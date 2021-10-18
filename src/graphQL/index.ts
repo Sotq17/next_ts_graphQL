@@ -78,6 +78,7 @@ export const GET_ISSUES = gql`
           after: $cursor
           orderBy: { field: CREATED_AT, direction: DESC }
         ) {
+          totalCount
           edges {
             node {
               id

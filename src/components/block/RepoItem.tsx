@@ -22,6 +22,9 @@ export const RepoItem: React.FC<Props> = ({ data, linkText, linkHref }) => {
       <div css={itemBody}>
         <p css={itemBodyText}>URL: {data.url}</p>
         <p css={itemBodyText}>Stars: {data.stargazers.totalCount || '0'}</p>
+        {data.issues?.totalCount && (
+          <p css={itemBodyText}>issueCount:{data.issues.totalCount}</p>
+        )}
         <Link href={linkHref}>
           <a css={itemBodyLink}>{linkText}</a>
         </Link>
